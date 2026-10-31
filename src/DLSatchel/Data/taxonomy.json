@@ -1,0 +1,360 @@
+{
+  "_comment": "DDV item taxonomy. Every rule cites its evidence: 'pliki_testowe/Dane filtra.txt' (user's own classification) or the shipped game file ddv_Data/StreamingAssets/game_object_def.json (game 1.25.3) which marks which categories are 'ownable'. Edit this file instead of adding ifs in code.",
+  "schemaVersion": 1,
+  "subtypeSeparators": [
+    "/",
+    "!"
+  ],
+  "kindRules": [
+    {
+      "type": "ActivityData",
+      "namePrefix": "CookingRecipe",
+      "kind": "Recipe",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 1: 'ActivityData - Cooking - kolekcja'. A recipe is unlocked in Cookbook, not carried in the backpack."
+    },
+    {
+      "type": "ActivityData",
+      "namePrefix": "CraftingRecipe",
+      "kind": "Recipe",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 4: 'Crafting - kolekcja (/mission to crafty z misji)'."
+    },
+    {
+      "type": "ActivityData",
+      "namePrefix": "MiningData",
+      "kind": "Unknown",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 3: 'Mining - kolekcja'. ActivityData entries are collection counters, not backpack items."
+    },
+    {
+      "type": "ActivityData",
+      "namePrefix": "FishingData",
+      "kind": "Unknown",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 2: 'Ryby - kolekcja'."
+    },
+    {
+      "type": "ActivityData",
+      "namePrefix": "TimeBendingData",
+      "kind": "Unknown",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 5: 'Timebending - kolekcja'."
+    },
+    {
+      "type": "ActivityData",
+      "kind": "Unknown",
+      "placement": "None",
+      "_comment": "Catch-all for ActivityData: never a backpack item."
+    },
+    {
+      "type": "Companion",
+      "namePrefix": "Mount",
+      "kind": "Companion",
+      "placement": "None",
+      "_comment": "Companion/Mount/... is a mount, stored in Player.Mounts, not Player.Pets."
+    },
+    {
+      "type": "Companion",
+      "namePrefix": "Snippet",
+      "kind": "Companion",
+      "placement": "None",
+      "_comment": "Snippet creatures are not Player.Pets entries."
+    },
+    {
+      "type": "Upgrade",
+      "kind": "Tool",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 94: 'Upagrade - wszelkie ulepszenia narzedzi'. Held in Player.ToolUpgrades per tool."
+    },
+    {
+      "type": "MemoryShard",
+      "kind": "Memory",
+      "placement": "Collection",
+      "_comment": "Dane filtra.txt line 64: memory fragments; stored in CollectionSets / Player.MemoryShards."
+    },
+    {
+      "type": "Set",
+      "kind": "CollectionSet",
+      "placement": "Collection",
+      "_comment": "Dane filtra.txt line 80: 'Set - pelne kolekcje ubran, mebli etc'."
+    },
+    {
+      "type": "CollectionSet",
+      "kind": "CollectionSet",
+      "placement": "Collection",
+      "_comment": "Collection definitions are unlocked as a whole, not placed in a container."
+    },
+    {
+      "type": "Character",
+      "kind": "Unknown",
+      "placement": "None",
+      "_comment": "Dane filtra.txt line 35: 'Character - po prostu postacie, nie powielac'. game_object_def.json marks Character ownable, but it is not an inventory item."
+    }
+  ],
+  "kindByType": {
+    "Furniture": "Furniture",
+    "Clothing": "Clothing",
+    "ActivityItem": "ActivityItem",
+    "Companion": "Companion",
+    "Building": "Building",
+    "Tool": "Tool",
+    "Currency": "Currency",
+    "Makeup": "Makeup",
+    "Skin": "Skin",
+    "Trimming": "Trimming",
+    "TouchOfMagic": "TouchOfMagic",
+    "MountGear": "MountGear",
+    "BoardGame": "BoardGame",
+    "AvatarFeature": "AvatarFeature",
+    "PhotoMode": "PhotoMode",
+    "MemoryShard": "Memory",
+    "ActivityData": "Recipe",
+    "Set": "CollectionSet",
+    "CollectionSet": "CollectionSet",
+    "Upgrade": "Tool",
+    "Environment": "Unknown"
+  },
+  "kindByCategory": {
+    "Furniture": "Furniture",
+    "Furniture Story": "Furniture",
+    "Misc Decoration": "Furniture",
+    "Chest": "Furniture",
+    "Door": "Furniture",
+    "Fence": "Furniture",
+    "Road": "Furniture",
+    "Landscaping Path": "Furniture",
+    "Tree": "Furniture",
+    "Clothes Outfit": "Clothing",
+    "Clothes Helmet": "Clothing",
+    "Clothes Shoe": "Clothing",
+    "Clothes Jacket": "Clothing",
+    "Clothes Top": "Clothing",
+    "Clothes Bottom": "Clothing",
+    "Clothes Back": "Clothing",
+    "Clothes Hair": "Clothing",
+    "Clothes Glove": "Clothing",
+    "Clothes Glasses": "Clothing",
+    "Clothes Bracelet": "Clothing",
+    "Clothes Socks": "Clothing",
+    "Clothes Skirt": "Clothing",
+    "Clothes Inner Neckwear": "Clothing",
+    "Clothes Outer Neckwear": "Clothing",
+    "Clothes Beard": "Clothing",
+    "Clothes Mustache": "Clothing",
+    "Clothes Earring": "Clothing",
+    "Accessory": "Clothing",
+    "Motif": "TouchOfMagic",
+    "Food": "ActivityItem",
+    "Seed": "ActivityItem",
+    "Flower": "ActivityItem",
+    "Fish": "ActivityItem",
+    "Gem": "ActivityItem",
+    "Vegetable": "ActivityItem",
+    "Fruit": "ActivityItem",
+    "Material": "ActivityItem",
+    "Pantry Item": "ActivityItem",
+    "Spice": "ActivityItem",
+    "Sweets": "ActivityItem",
+    "Sea Food": "ActivityItem",
+    "Protein": "ActivityItem",
+    "Grain": "ActivityItem",
+    "Consumable": "ActivityItem",
+    "Potion": "ActivityItem",
+    "Quest Item": "ActivityItem",
+    "Quest Seed": "ActivityItem",
+    "Quest Crop": "ActivityItem",
+    "Quest": "ActivityItem",
+    "Manual": "ActivityItem",
+    "Pet": "Companion",
+    "House Wallpaper": "Trimming",
+    "House Floor": "Trimming",
+    "Border": "Trimming",
+    "House": "Building",
+    "Well": "Building",
+    "Well Skin/Building Skin": "Building",
+    "Stall Skin": "Building",
+    "Plaza/Castle Skin": "Building",
+    "Tools": "Tool",
+    "Tool Upgrade": "Tool",
+    "Backpack Upgrade": "Tool",
+    "Currencies": "Currency",
+    "Memory Shard": "Memory",
+    "Memories": "Memory",
+    "Makeup Face": "Makeup",
+    "Makeup Eyebrow": "Makeup",
+    "Makeup Blush": "Makeup",
+    "Makeup Eyes Shadow": "Makeup",
+    "Makeup Lipstick": "Makeup",
+    "Makeup Birthmark": "Makeup",
+    "Makeup Stubble": "Makeup",
+    "Mount Saddle": "MountGear",
+    "Mount Blanket": "MountGear",
+    "Mount Bridle": "MountGear",
+    "Mount Pack": "MountGear",
+    "Mount Tail": "MountGear",
+    "Mount Gallop": "MountGear",
+    "Mount Mane": "MountGear",
+    "Mount Legs": "MountGear",
+    "Mount Skin": "MountGear",
+    "Mount": "MountGear",
+    "NPC Scramblecoin": "BoardGame",
+    "PhotoMode": "PhotoMode"
+  },
+  "placementByKind": {
+    "Furniture": "Storage",
+    "Clothing": "Wardrobe",
+    "ActivityItem": "Backpack",
+    "Companion": "Pet",
+    "Building": "Storage",
+    "Tool": "Tool",
+    "Currency": "Currency",
+    "CollectionSet": "Collection",
+    "Recipe": "None",
+    "Memory": "Collection",
+    "Makeup": "Wardrobe",
+    "Skin": "Wardrobe",
+    "Trimming": "Storage",
+    "TouchOfMagic": "Storage",
+    "MountGear": "Storage",
+    "BoardGame": "Storage",
+    "AvatarFeature": "Storage",
+    "PhotoMode": "Storage",
+    "Unknown": "None"
+  },
+  "nonInventoryTypes": [
+    "Condition",
+    "ConditionalEvent",
+    "Dialogue",
+    "Mission",
+    "LootTable",
+    "DutyAch",
+    "Ftue",
+    "RecurringEvent",
+    "Tag",
+    "Scene",
+    "Preference",
+    "PointOfInterest",
+    "Story",
+    "Formula",
+    "Character",
+    "Display",
+    "Profession",
+    "Environment",
+    "ItemCondition"
+  ],
+  "testItemRules": [
+    {
+      "fields": [ "notes", "category" ],
+      "pattern": "(?i)\\bTEST[ _]?ITEM\\b",
+      "_comment": "Rubyelf marks developer assets with 'TEST ITEM' / 'TEST_ITEM' notes."
+    },
+    {
+      "fields": [ "name" ],
+      "pattern": "(?:^|[/!_])Test(?:Asset)?(?:[_!]|$)",
+      "_comment": "Internal NAME with 'Test' as its own token: CloFeet/Feet_Test, CloTopInner/TestAsset!Shirt100. Real items like RorschachTest01 or StrengthTestBell are CamelCase and do not match."
+    },
+    {
+      "fields": [ "display" ],
+      "pattern": "(?:^|_)Test(?:_|$)|^Test[A-Z]",
+      "_comment": "Raw developer names shown as display names: Hair_Test, TestBoulder. 'Ink Blot Test' or 'The Beast's Test' are real items and do not match."
+    }
+  ],
+  "safetyRules": [
+    {
+      "state": "Caution",
+      "matchAny": [
+        "PIXEL DUST"
+      ],
+      "_comment": "Widoczne ostrzeżenie przy walucie online; użytkownik nadal może ją edytować świadomie."
+    },
+    {
+      "state": "Unsafe",
+      "matchAny": [
+        "NOTHING",
+        "DEBUG",
+        "DONT USE",
+        "DON'T USE",
+        "DO NOT USE",
+        "NOT IN GAME",
+        "UNRELEASED",
+        "CAN BUG OUT YOUR SAVE",
+        "BUGGED",
+        "BREAKS YOUR SAVE",
+        "BREAK YOUR SAVE",
+        "WILL BREAK SAVE",
+        "WILL BREAK GAME",
+        "NEVER MAKE ORIGINAL"
+      ],
+      "fields": [ "display", "category", "notes", "catalogue" ],
+      "ignoreAny": [
+        "DONT USE IF YOU DONT HAVE THE DLC",
+        "DONT USE UNLESS BROKEN QUEST",
+        "ONLY IF BUGGED",
+        "NO LONGER LISTED AS \"DEBUG\"",
+        "NO LONGER LISTED AS DEBUG"
+      ],
+      "_comment": "Apostrophes are removed by the matcher, so 'DON'T USE' = 'DONT USE'. Only the source's own labels are read (display/category/notes/catalogue), never the internal NAME path: 'Ingredient/Mission!...CorruptedMushrooms' is a quest item, not a broken one. ignoreAny cuts conditional notes (DLC-only, broken-quest fixes, 'no longer Debug') before matching; the Caution rules below pick them up."
+    },
+    {
+      "state": "Unsafe",
+      "matchAny": [
+        "CRASH",
+        "CORRUPT"
+      ],
+      "fields": [ "category", "notes", "catalogue" ],
+      "_comment": "Warning words only in the source's notes/categories: real items are named 'Corrupted Flower' or 'The De Vil Crash'."
+    },
+    {
+      "state": "Caution",
+      "matchAny": [
+        "LANDSCAPING PATH"
+      ],
+      "_comment": "Paths use NAME namespace Landscaping/ but are accepted in the save's Furniture inventory as GroundAlteration; keep visible as caution until verified by loading the modified save in game."
+    },
+    {
+      "state": "Caution",
+      "matchAny": [
+        "MISSION!",
+        "EVENT!",
+        "CHARACTER"
+      ],
+      "fields": [ "name", "type" ],
+      "_comment": "Mission/event/character progression items remain addable only after a warning confirmation; their save effects are not fully verified. These are internal NAME/TYPE markers (Default/Mission!..., CharacterShard/..., TYPE Character), so display names like 'Character Styles' do not count."
+    },
+    {
+      "state": "Caution",
+      "matchAny": [
+        "PREMIUM",
+        "STAR PATH",
+        "SECRET QUEST",
+        "QUEST ITEM",
+        "QUEST REWARD",
+        "REQUESTITEM",
+        "REQUEST ITEM",
+        "EVENT",
+        "SEASONAL",
+        "BUNDLE",
+        "CAREFUL",
+        "DO NOT CRAFT",
+        "DON'T CRAFT",
+        "DONT CRAFT",
+        "CHARACTER HOUSE",
+        "CHARACTER'S HOUSE",
+        "VILLAGER HOUSE",
+        "IF YOU DONT HAVE THE DLC",
+        "UNLESS BROKEN QUEST",
+        "ONLY IF BUGGED",
+        "CAN BUG",
+        "COULD BUG",
+        "BREAK QUEST",
+        "BREAK GAME",
+        "BREAK YOUR GAME",
+        "NOT SURE IF SAFE",
+        "WOULDNT USE"
+      ],
+      "fields": [ "name", "display", "category", "notes", "catalogue" ],
+      "_comment": "Not matched against TYPE, so non-item types such as ConditionalEvent/RecurringEvent are not flagged just for containing 'Event'. Caution items are allowed but visible; the save itself depends on game/quest state. 'CAREFUL' covers notes like 'CAREFUL - ONLY USE IF A QUEST IS BROKEN'. External catalog notes containing Do Not Craft and character-house labels are caution-only."
+    }
+  ]
+}

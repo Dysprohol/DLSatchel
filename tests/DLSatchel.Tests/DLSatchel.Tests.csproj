@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <!-- Only the editor itself is published (Properties\PublishProfiles\FolderProfile.pubxml). -->
+    <IsPublishable>false</IsPublishable>
+    <AssemblyName>DLSatchel.Tests</AssemblyName>
+    <RootNamespace>DDV.SaveEditor.Tests</RootNamespace>
+    <!-- Y:\ (dysk sieciowy/wirtualny) nie pozwala uruchomić testhost.exe,
+         więc binaria testowe budujemy w lokalnym katalogu tymczasowym. -->
+    <OutputPath>$(TEMP)\dl-satchel-tests\bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(TEMP)\dl-satchel-tests\obj\$(Configuration)\</IntermediateOutputPath>
+    <!-- tests read the real workbooks from the app output -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+    <PackageReference Include="MemoryPack" Version="1.21.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DLSatchel\DLSatchel.csproj" />
+  </ItemGroup>
+
+  <!-- Integration tests load the same files the editor ships with. -->
+  <ItemGroup>
+    <None Include="..\..\pliki_testowe\*.xlsx"
+          Link="pliki_testowe\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

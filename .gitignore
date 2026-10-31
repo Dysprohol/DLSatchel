@@ -1,0 +1,20 @@
+# Build output
+bin/
+obj/
+output/
+.vs/
+.build-temp/
+*.user
+
+# Local data: saves, community spreadsheets, logs
+pliki_testowe/
+profile*.json
+*_decoded.json
+*.bak
+log.txt
+Doc.docx
+
+# Local working notes
+KNOWN_GAPS.md
+ROADMAP_PL.md
+SAVE_FORMAT_SUPPORT_PL.md

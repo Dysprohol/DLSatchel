@@ -1,0 +1,522 @@
+<Window x:Class="DDV_SaveEditor_G.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DL Satchel - save editor"
+        Icon="/DLSatchel;component/Assets/Icons/logo.png"
+        Background="{StaticResource WindowBackground}"
+        Foreground="{StaticResource Starlight}"
+        FontFamily="Segoe UI" FontSize="13"
+        Height="900" Width="1360"
+        MinWidth="900" MinHeight="700">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Info & Filters -->
+            <RowDefinition Height="*"/>
+            <!-- DataGrids -->
+            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image Source="/DLSatchel;component/Assets/Icons/logo.png" Width="38" Height="38" Margin="0,0,12,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="DL SATCHEL" FontSize="25" FontWeight="Bold"
+                               Foreground="{StaticResource DreamlightGold}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="SAVE EDITOR" FontSize="10"
+                               Foreground="{StaticResource MutedStarlight}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+                <Image Source="/DLSatchel;component/Assets/Icons/logo.png" Width="38" Height="38" Margin="12,0,0,0"/>
+            </StackPanel>
+
+            <!-- Version, project page and updates -->
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="330">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Name="VersionText" VerticalAlignment="Center" FontSize="12"
+                               Foreground="{StaticResource MutedStarlight}" Text="v1.0.0"/>
+                    <TextBlock VerticalAlignment="Center" FontSize="12" Margin="10,0,10,0">
+                        <Hyperlink Click="GitHubLink_Click" Foreground="{StaticResource DreamlightGold}"
+                                   ToolTip="Open the releases page on GitHub">GitHub</Hyperlink>
+                    </TextBlock>
+                    <Button Name="CheckUpdatesButton" Click="CheckUpdates_Click" Padding="10,3" FontSize="12"
+                            Content="Check for updates" ToolTip="Ask GitHub whether a newer version is out"/>
+                </StackPanel>
+                <CheckBox Name="CheckUpdatesAtStartCheckBox" HorizontalAlignment="Right" Margin="0,5,0,0" FontSize="11"
+                          Checked="CheckUpdatesAtStart_Changed" Unchecked="CheckUpdatesAtStart_Changed"
+                          ToolTip="Check GitHub for a newer version every time the editor starts">
+                    <TextBlock Text="Check at start"/>
+                </CheckBox>
+                <TextBlock HorizontalAlignment="Right" Margin="0,4,0,0" FontSize="11" TextWrapping="Wrap" TextAlignment="Right">
+                    <Run Name="UpdateStatusRun" Foreground="{StaticResource MutedStarlight}"/>
+                    <Hyperlink Name="InstallUpdateLink" Click="InstallUpdate_Click" Foreground="{StaticResource DreamlightGold}"
+                               FontWeight="SemiBold"><Run Name="InstallUpdateRun"/></Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+
+        <!-- Info & Filters merged -->
+        <Grid Grid.Row="1" Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: player profile -->
+            <GroupBox Grid.Column="0" Margin="0,0,10,0" MinHeight="194">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="20" Height="20" Margin="0,0,7,0"/>
+                        <TextBlock Text="Your Valley Profile" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Row 0 -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Player name:"     VerticalAlignment="Center" Margin="0,2"/>
+                    <TextBox   Grid.Row="0" Grid.Column="1" Name="NameBox"          Height="24" MinHeight="24" Padding="5,2"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Dreamlight:"      VerticalAlignment="Center" Margin="10,2,0,2"/>
+                    <TextBox   Grid.Row="0" Grid.Column="3" Name="DreamlightBox"    Height="24" MinHeight="24" Padding="5,2"/>
+
+                    <!-- Row 1 -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Level:"           VerticalAlignment="Center" Margin="0,2"/>
+                    <TextBox   Grid.Row="1" Grid.Column="1" Name="LevelBox"         Height="24" MinHeight="24" Padding="5,2"/>
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Star Coins:"      VerticalAlignment="Center" Margin="10,2,0,2"/>
+                    <TextBox   Grid.Row="1" Grid.Column="3" Name="StarCoinsBox"     Height="24" MinHeight="24" Padding="5,2"/>
+
+                    <!-- Row 2 -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="XP:"              VerticalAlignment="Center" Margin="0,2"/>
+                    <TextBox   Grid.Row="2" Grid.Column="1" Name="XpBox"            Height="24" MinHeight="24" Padding="5,2"/>
+                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Pixel Dust:" VerticalAlignment="Center" Margin="10,2,0,2"/>
+                    <TextBox   Grid.Row="2" Grid.Column="3" Name="PixelDustBox" Height="24" MinHeight="24" Padding="5,2"
+                               ToolTip="Pixel Dust may be linked to online features. Change it carefully and keep a backup of your save."/>
+
+                    <!-- Row 3 -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Mist:"            VerticalAlignment="Center" Margin="0,2"/>
+                    <TextBox   Grid.Row="3" Grid.Column="1" Name="MistBox"          Height="24" MinHeight="24" Padding="5,2"/>
+                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Daisy Coins:"     VerticalAlignment="Center" Margin="10,2,0,2"/>
+                    <TextBox   Grid.Row="3" Grid.Column="3" Name="DaisyCoinsBox"    Height="24" MinHeight="24" Padding="5,2"/>
+
+                    <!-- Row 4 -->
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Storybook Magic:" VerticalAlignment="Center" Margin="0,2"/>
+                    <TextBox   Grid.Row="4" Grid.Column="1" Name="StorybookMagicBox" Height="24" MinHeight="24" Padding="5,2"/>
+
+                    <!-- Row 5: player backpack slot count -->
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Backpack slots:" VerticalAlignment="Center" Margin="0,6"/>
+                    <ComboBox Grid.Row="5" Grid.Column="1" Name="SlotUpgradeComboBox" Height="24" MinHeight="24" Padding="5,2"
+                              SelectionChanged="SlotUpgradeComboBox_SelectionChanged">
+                        <ComboBoxItem Content="Starter · 21 slots" Tag="21"/>
+                        <ComboBoxItem Content="Upgrade 1 · 28 slots" Tag="28"/>
+                        <ComboBoxItem Content="Upgrade 2 · 35 slots" Tag="35"/>
+                        <ComboBoxItem Content="Upgrade 3 · 42 slots" Tag="42"/>
+                    </ComboBox>
+                    <Button Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2"
+                            Name="CustomSlotSizeButton" Content="Set custom size"
+                            Click="CustomSlotSizeButton_Click" Height="28"
+                            HorizontalAlignment="Left" Margin="8,0,0,0" MinWidth="132"
+                            Padding="8,3" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+            </GroupBox>
+
+            <!-- Right: item search and actions -->
+            <GroupBox Grid.Column="1" MinHeight="196">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="20" Height="20" Margin="0,0,7,0"/>
+                        <TextBlock Text="Find &amp; Add Items" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </GroupBox.Header>
+                <StackPanel Margin="8">
+                    <!-- Filters -->
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Item name" Margin="0,0,0,5"/>
+                            <TextBox Name="SearchNameBox" Height="28" MinHeight="28" Padding="6,2" TextChanged="SearchFilter_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="10,0">
+                            <TextBlock Text="Item ID" Margin="0,0,0,3"/>
+                            <TextBox Name="SearchIdBox" Height="28" MinHeight="28" Padding="6,2" PreviewTextInput="DigitsOnly" TextChanged="SearchFilter_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Margin="10,0">
+                            <TextBlock Text="Category" Margin="0,0,0,5"/>
+                            <ComboBox Name="TypeComboBox" IsEnabled="False" Height="28" SelectionChanged="TypeComboBox_SelectionChanged"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="3" Margin="10,0" VerticalAlignment="Bottom">
+                            <CheckBox Name="HideUnsafeCheckBox"
+                                      IsChecked="True"
+                                      Checked="HideUnsafe_Changed" Unchecked="HideUnsafe_Changed"
+                                      Margin="0,0,0,6">
+                                <TextBlock Text="Hide risky or unfinished items" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <CheckBox Name="HideCautionCheckBox"
+                                      IsChecked="False"
+                                      Checked="HideCaution_Changed" Unchecked="HideCaution_Changed"
+                                      ToolTip="Hide catalog entries marked CAUTION; this is separate from risky or unfinished items."
+                                      Margin="0,0,0,6">
+                                <TextBlock Text="Hide caution items" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <CheckBox Name="HideTestCheckBox"
+                                      IsChecked="True"
+                                      Checked="HideTest_Changed" Unchecked="HideTest_Changed"
+                                      ToolTip="Hide developer test assets such as Feet_Test, TestAsset or items noted 'TEST ITEM'. Real items like 'Ink Blot Test' stay visible."
+                                      Margin="0,0,0,6">
+                                <TextBlock Text="Hide test items" TextWrapping="Wrap"/>
+                            </CheckBox>
+                            <CheckBox Name="HighlightOwnershipCheckBox" IsEnabled="False"
+                                      Checked="HighlightOwnership_Changed" Unchecked="HighlightOwnership_Changed"
+                                      ToolTip="Teal rows are present in the profile; blue rows are not. Reads player inventories and collection flags only. Character containers are not inspected.">
+                                <TextBlock Text="Highlight owned / missing" TextWrapping="Wrap"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Grid>
+                                        <!-- Add selected item and edit actions -->
+                    <Border Background="#14213A" BorderBrush="{StaticResource Line}" BorderThickness="1"
+                            CornerRadius="9" Padding="6" Margin="0,0,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="2,0,0,3">
+                                <Image Source="/DLSatchel;component/Assets/Icons/collections.png"
+                                       Width="17" Height="17" Margin="0,0,7,0"/>
+                                <TextBlock Text="Add selected item" Foreground="{StaticResource DreamlightGold}"
+                                           FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*"/>
+                                    <ColumnDefinition Width="0.85*"/>
+                                    <ColumnDefinition Width="1.2*"/>
+                                    <ColumnDefinition Width="1.4*"/>
+                                    <ColumnDefinition Width="1.15*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                    <TextBlock Text="Item ID" Margin="0,0,0,3"/>
+                                    <TextBox Name="ItemIDTextBox" Height="28" MinHeight="28" Padding="6,2"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                    <TextBlock Text="Amount" Margin="0,0,0,3"/>
+                                    <TextBox Name="ItemAmountTextBox" Height="28" MinHeight="28" Padding="6,2"/>
+                                </StackPanel>
+                                <Button Grid.Column="2" Name="AddItemButton" Content="Add item" MinWidth="100"
+                                        Height="32" Margin="2,16,4,0" Click="AddItemButton_Click"
+                                        ToolTip="Add the selected item ID to its game-defined collection"/>
+                                <Button Grid.Column="3" Name="RemoveSelectedButton" Content="Remove selected"
+                                        MinWidth="120" Height="32" Margin="4,16,4,0"
+                                        Click="RemoveItemButton_Click" Style="{StaticResource DangerButton}"
+                                        ToolTip="Remove the selected entries from this collection"/>
+                                <Button Grid.Column="4" Content="Discard edits" MinWidth="100" Height="32" Margin="4,16,0,0" Click="DiscardChanges_Click"
+                                        ToolTip="Revert all unsaved changes to the last loaded save"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <!-- Destination and safety note for the last added item -->
+                    <TextBlock Name="AddStatusText" Margin="0,0,0,0" TextWrapping="Wrap" Foreground="{StaticResource DreamlightMint}"
+                               Text="Select an item from the catalog to see where it will go. Items are routed using the game's save rules."/>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+
+        <!-- DataGrid Section -->
+        <Grid Grid.Row="2" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.8*"/><ColumnDefinition Width="1.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Item catalog -->
+            <GroupBox Grid.Column="0" Margin="0,0,5,0">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="20" Height="20" Margin="0,0,7,0"/>
+                        <TextBlock Text="Item Catalog" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </GroupBox.Header>
+                <DataGrid
+              Name="ExcelDataGrid"
+              AutoGenerateColumns="False"
+              IsReadOnly="True"
+              SelectionChanged="ExcelDataGrid_SelectionChanged"
+              MouseDoubleClick="ExcelDataGrid_MouseDoubleClick"
+              ScrollViewer.VerticalScrollBarVisibility="Auto"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID"
+                                    Binding="{Binding ID}"
+                                    Width="Auto"/>
+                        <DataGridTextColumn Header="Name"
+                                    Binding="{Binding NAME}"
+                                    Width="*"/>
+                        <DataGridTextColumn Header="In-game Name"
+                                    Binding="{Binding LOCALIZED_DISPLAY_NAME}"
+                                    Width="2*"/>
+                        <DataGridTextColumn Header="Type"
+                                    Binding="{Binding TYPE}"
+                                    Width="Auto"/>
+                        <DataGridTextColumn Header="Category"
+                                    Binding="{Binding CATEGORY}"
+                                    Width="Auto"/>
+                        <DataGridTextColumn x:Name="OwnershipColumn" Header="Save"
+                                    Binding="{Binding OWNED_STATUS}"
+                                    Width="90" Visibility="Collapsed"/>
+                        <DataGridTextColumn Header="Safety"
+                                    Binding="{Binding SAFETY}"
+                                    Width="78"/>
+                        <DataGridTextColumn Header="Notes"
+                                    Binding="{Binding NOTES}"
+                                    Width="*"/>
+                        <DataGridTextColumn Header="Patch"
+                                    Binding="{Binding PATCH}"
+                                    Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+
+            <!-- Player collection -->
+            <GroupBox Grid.Column="1" Margin="5,0,0,0">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/DLSatchel;component/Assets/Icons/furniture.png" Width="20" Height="20" Margin="0,0,7,0"/>
+                        <TextBlock Text="Your Collection" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Name="CollectionHelpText" Grid.Row="0" Margin="6,0,6,6"
+                           Foreground="{StaticResource MutedStarlight}" TextWrapping="Wrap"
+                           Text="Your save, organized by collection."/>
+                <TabControl Name="InventoryTabs" Grid.Row="1" SelectionChanged="InventoryTabs_SelectionChanged">
+                    <TabControl.Template>
+                        <ControlTemplate TargetType="TabControl">
+                            <Grid KeyboardNavigation.TabNavigation="Local">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <UniformGrid Grid.Row="0" IsItemsHost="True" Columns="4"
+                                             KeyboardNavigation.TabIndex="1"/>
+                                <Border Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        Background="{TemplateBinding Background}"
+                                        KeyboardNavigation.DirectionalNavigation="Contained"
+                                        KeyboardNavigation.TabIndex="2">
+                                    <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"
+                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </Grid>
+                        </ControlTemplate>
+                    </TabControl.Template>
+                    <TabControl.ItemContainerStyle>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Padding" Value="6,4"/>
+                            <Setter Property="Margin" Value="2"/>
+                            <Setter Property="MinHeight" Value="29"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                            <Setter Property="FontSize" Value="10.5"/>
+                            <Setter Property="Foreground" Value="{StaticResource Starlight}"/>
+                            <Setter Property="Background" Value="#2B4168"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="7" SnapsToDevicePixels="True">
+                                            <ContentPresenter ContentSource="Header"
+                                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                              RecognizesAccessKey="True"
+                                                              Margin="{TemplateBinding Padding}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="TabBorder" Property="Background" Value="#40577F"/>
+                                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource DreamlightGold}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource DreamlightGold}"/>
+                                                <Setter Property="Panel.ZIndex" Value="1"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="TabBorder" Property="Background" Value="#354D75"/>
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="TabBorder" Property="Opacity" Value="0.55"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.ItemContainerStyle>
+                    <!-- Player backpack inventory; character-specific containers are not mapped here. -->
+                    <TabItem Tag="Backpack">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal"><Border Background="#B9C7DE" CornerRadius="4" Padding="2" Margin="0,0,5,0" VerticalAlignment="Center"><Image Source="/DLSatchel;component/Assets/Icons/ingredients.png" Width="13" Height="13"/></Border><TextBlock Text="Backpack" VerticalAlignment="Center"/></StackPanel>
+                        </TabItem.Header>
+                        <DataGrid Name="PlayerInventoryDataGrid" AutoGenerateColumns="False" CanUserAddRows="False"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Item ID" Binding="{Binding [Item ID]}" Width="Auto"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" Width="2*"/>
+                                <DataGridTextColumn Header="In-game Name" Binding="{Binding [LOCALIZED_DISPLAY_NAME]}" Width="2*"/>
+                                <DataGridTextColumn Header="Amount" Binding="{Binding [Amount]}" Width="Auto"/>
+                                <DataGridTextColumn Header="Category" Binding="{Binding [Category]}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Tag="Pets">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal"><Border Background="#B9C7DE" CornerRadius="4" Padding="2" Margin="0,0,5,0" VerticalAlignment="Center"><Image Source="/DLSatchel;component/Assets/Icons/companions.png" Width="13" Height="13"/></Border><TextBlock Text="Companions" VerticalAlignment="Center"/></StackPanel>
+                        </TabItem.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                                <Button Name="SetCurrentPetButton"
+                                        DockPanel.Dock="Right"
+                                        Content="Set as current"
+                                        IsEnabled="False"
+                                        Click="SetCurrentPet_Click"/>
+                                <TextBlock
+                                      Name="CurrentPetText"
+                                      FontWeight="Bold"
+                                      VerticalAlignment="Center"
+                                      Text="Current companion: —"/>
+                            </DockPanel>
+
+                                                        <DataGrid
+                                  Name="PetDataGrid"
+                                  Grid.Row="1"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  SelectionChanged="PetDataGrid_SelectionChanged"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                                            <DataGrid.Columns>
+                                                                <DataGridTextColumn
+                                      Header="Companion ID"
+                                      Binding="{Binding [Pet ID]}"
+                                      Width="Auto"/>
+
+                                                                <DataGridTextColumn
+                                      Header="Name"
+                                      Binding="{Binding [Name]}"
+                                      Width="2*"/>
+
+                                                                <DataGridTextColumn
+                                      Header="In-game Name"
+                                      Binding="{Binding [Localized Name]}"
+                                      Width="2*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+
+                    <!-- Experimental: only minimal MountItemID records are created; the game defaults are not confirmed. -->
+                    <TabItem Tag="Mounts">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal"><Border Background="#B9C7DE" CornerRadius="4" Padding="2" Margin="0,0,5,0" VerticalAlignment="Center"><Image Source="/DLSatchel;component/Assets/Icons/friendship.png" Width="13" Height="13"/></Border><TextBlock Text="Mounts" VerticalAlignment="Center"/></StackPanel>
+                        </TabItem.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Name="MountsStatusText" Grid.Row="0" Margin="4,2,4,6" TextWrapping="Wrap"
+                                       Foreground="{StaticResource DreamlightMint}"
+                                       Text="Experimental mount additions are available through Find &amp; Add Items. New records contain only MountItemID; use a separate backup copy because bond and customization defaults are unverified."/>
+                            <DataGrid Name="MountsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                                      CanUserAddRows="False" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mount ID" Binding="{Binding [Mount ID]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" Width="2*"/>
+                                    <DataGridTextColumn Header="Bond level" Binding="{Binding [Bond level]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Bond points" Binding="{Binding [Bond points]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Ability level" Binding="{Binding [Ability level]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Customized" Binding="{Binding [Customized]}" Width="Auto"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Clothes: szafa gracza = Player.ListInventories z CompatibleItemType "ItemType_Clothing" -->
+                    <TabItem Tag="Clothes">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal"><Border Background="#B9C7DE" CornerRadius="4" Padding="2" Margin="0,0,5,0" VerticalAlignment="Center"><Image Source="/DLSatchel;component/Assets/Icons/clothing.png" Width="13" Height="13"/></Border><TextBlock Text="Wardrobe" VerticalAlignment="Center"/></StackPanel>
+                        </TabItem.Header>
+                        <DataGrid Name="ClothesDataGrid"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  Margin="5"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Item ID" Binding="{Binding [Item ID]}" IsReadOnly="True" Width="Auto" />
+                                <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" IsReadOnly="True" Width="*" />
+                                <DataGridTextColumn Header="In-game Name" Binding="{Binding [Localized Name]}" IsReadOnly="True" Width="*" />
+                                <DataGridTextColumn Header="Amount" Binding="{Binding [Amount]}" Width="Auto" />
+                                <DataGridTextColumn Header="Category" Binding="{Binding [Category]}" IsReadOnly="True" Width="Auto" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+
+                </TabControl>
+                </Grid>
+            </GroupBox>
+        </Grid>
+
+
+        <!-- Buttons Section -->
+        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Width="150" MinHeight="38" Margin="5" Click="LoadExcel_Click" ToolTip="Choose one or more catalog files; replaces the catalogs loaded now"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Item Catalog"/></StackPanel></Button>
+                <Button Width="150" MinHeight="38" Margin="5" Click="AddCatalog_Click" ToolTip="Add another catalog (e.g. Rubyelf next to the KOSDDV dump); both are merged by priority"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="+ Add Catalog"/></StackPanel></Button>
+                <Button Width="150" MinHeight="38" Margin="5" Click="SaveChanges_Click" Style="{StaticResource AccentButton}" ToolTip="Review and write your edits to the selected save"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/logo.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Save Changes"/></StackPanel></Button>
+                <Button Width="190" MinHeight="38" Margin="5" Click="OpenFile_Click" ToolTip="Open a profile.json save from a location you choose"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Open Save…"/></StackPanel></Button>
+                <Button Width="190" MinHeight="38" Margin="5" Click="AutoDetectSave_Click" ToolTip="Find saves in the usual game folders"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Find Game Save"/></StackPanel></Button>
+                <Button Width="135" MinHeight="38" Margin="5" Name="ValidateSaveButton" IsEnabled="False" Click="ValidateSave_Click" ToolTip="Check known item locations without changing the save"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Check Save"/></StackPanel></Button>
+                <Button Width="145" MinHeight="38" Margin="5" Click="CompareSaves_Click" ToolTip="Compare two profiles without changing either one"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Compare Saves"/></StackPanel></Button>
+                <Button Width="110" MinHeight="38" Margin="5" Click="Sources_Click" ToolTip="Manage item catalog files, priorities and reports"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Sources…"/></StackPanel></Button>
+            </WrapPanel>
+            <TextBlock Name="DbStatusText" HorizontalAlignment="Center" Margin="0,4,0,0" Foreground="{StaticResource MutedStarlight}"
+                       Text="Item catalog not loaded"/>
+        </StackPanel>
+    </Grid>
+</Window>
