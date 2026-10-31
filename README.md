@@ -40,7 +40,7 @@ saving, so you don't need any other tools.
    You only do this once.
 4. Click **Find Game Save** and choose your save.
 5. Find an item: type its name in **Item name**, click it in the list, set **Amount**,
-   click **Add item**. It goes to the right place by itself (backpack, wardrobe, furniture...).
+   click **Add item** or just double click on it. It goes to the right place by itself (backpack, wardrobe, furniture...).
 
    ![Finding and adding an item](docs/img/dl-satchel-add-item.png)
 
