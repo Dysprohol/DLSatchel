@@ -29,7 +29,7 @@ saving, so you don't need any other tools.
      and click **File > Download > Microsoft Excel (.xlsx)**.
 
    Use both if you can. New items and questions:
-   [the forum thread](https://fearlessrevolution.com/viewtopic.php?f=23&t=29455&p=471075#p471075),
+   [the forum thread](https://fearlessrevolution.com/viewtopic.php?f=2&t=21330),
    where the people who make the lists post.
 
 ## How to use it
@@ -60,10 +60,10 @@ Tick **Check at start** to check every time; otherwise the editor never goes onl
 
 | | |
 |---|---|
-| **SAFE** | A normal item. |
-| **CAUTION** (brown row) | Quest, event or shop item. Added too early, it can get a quest stuck. |
-| **UNSAFE** | Broken or test item that can damage a save. Hidden unless you turn it on. |
-| **UNKNOWN** | The lists say too little about it. |
+| | **SAFE** | A normal item. |
+| | **CAUTION** (brown row) | Quest, event or shop item. Added too early, it can get a quest stuck. |
+| | **UNSAFE** | Broken or test item that can damage a save. Hidden unless you turn it on. |
+| | **UNKNOWN** | The lists say too little about it. |
 
 ## Going back
 
