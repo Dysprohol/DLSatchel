@@ -29,7 +29,7 @@ saving, so you don't need any other tools.
      and click **File > Download > Microsoft Excel (.xlsx)**.
 
    Use both if you can. New items and questions:
-   [the forum thread](https://fearlessrevolution.com/viewtopic.php?f=2&t=21330),
+   [the forum thread](https://fearlessrevolution.com/viewtopic.php?f=23&t=29455&p=471075#p471075),
    where the people who make the lists post.
 
 ## How to use it
