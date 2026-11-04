@@ -194,6 +194,42 @@ namespace DDV.SaveEditor.Tests
         }
 
         [Fact]
+        public async Task HeldAccessories_GoToToolsUnequipped_EvenWithoutAType()
+        {
+            // Parasols and umbrellas are not clothing: the game keeps them in Player.Tools.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string dump = XlsxBuilder.WriteCsv(Path.Combine(directory, "dump.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                "110800024,Accessory/UmbrellaWitchesAccessory01,Witchy Parasol,Tool\n" +
+                "110000002,Gardening/Shovel02,Better Shovel,Tool\n");
+            string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes\n" +
+                "69B9C5C,110800099,New Parasol,Accessory,\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((dump, 10), (rubyelf, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var save = JObject.Parse("""
+            { "Player": { "Tools": [ { "ToolItemID": 110000002, "CurrentOfType": true } ],
+                          "ListInventories": { "1": { "CompatibleItemType": "ItemType_Clothing", "Inventory": {} } } } }
+            """);
+
+            foreach (long id in new[] { 110800024L, 110800099L })
+            {
+                var placement = ItemPlacement.Resolve(save, id.ToString());
+                Assert.Equal(PlacementKind.Tool, placement.Kind);
+                Assert.True(ItemPlacement.AddTool(save, id));
+            }
+            Assert.False(ItemPlacement.AddTool(save, 110800024));   // already there
+            Assert.Empty((JObject)save["Player"]!["ListInventories"]!["1"]!["Inventory"]!);
+
+            var tools = ToolModule.MapTools(save).AsEnumerable()
+                .ToDictionary(r => r.Field<long>("Item ID"), r => (Kind: r.Field<string>("Kind"), InUse: r.Field<string>("In use")));
+            Assert.Equal(("Tool", "Yes"), tools[110000002]);
+            Assert.Equal(("Accessory", "No"), tools[110800024]);
+            Assert.Equal(("Accessory", "No"), tools[110800099]);
+        }
+
+        [Fact]
         public async Task RubyelfStyleCatalogFillsCategoryWithoutTypeColumn()
         {
             // Rubyelf has only a display Name and a human Category: no internal NAME, no TYPE.

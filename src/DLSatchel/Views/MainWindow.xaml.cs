@@ -151,6 +151,7 @@ namespace DDV_SaveEditor_G
                 RefreshInventoryDataGrid();
                 PopulatePets();
                 PopulateMounts();
+                PopulateTools();
                 foreach (var tbl in storageTables.Values)
                     foreach (DataRow row in tbl.Rows)
                         if (row.RowState != DataRowState.Deleted) ListInventoryModule.FillNames(row);
@@ -238,6 +239,7 @@ namespace DDV_SaveEditor_G
             RefreshInventoryDataGrid();
             PopulatePets();
             PopulateMounts();
+            PopulateTools();
             PopulateStorage();
             UpdateCollectionHelpText();
             UpdateInventorySlotsComboBox();
@@ -560,6 +562,8 @@ namespace DDV_SaveEditor_G
             // These groups share the game's TYPE but have distinct save locations.
             "Pets" => "[KIND] = 'Companion' AND [PLACEMENT] = 'Pet' AND [SUBTYPE] IN ('Pet', 'Critter')",
             "Mounts" => "[KIND] = 'Companion' AND [SUBTYPE] = 'Mount'",
+            // Tools and held accessories share Player.Tools; upgrades are not tools.
+            "Tools" => "[KIND] = 'Tool' AND [PLACEMENT] = 'Tool' AND ([TYPE] = 'Tool' OR [CATEGORY] = 'Accessory')",
 
             // Use the catalog's resolved category so rows inferred from a source
             // category are still shown with their CAUTION metadata.
@@ -628,6 +632,7 @@ namespace DDV_SaveEditor_G
             {
                 case "Pets":
                 case "Mounts":
+                case "Tools":
                 case "Clothes":
                 case "Backpack":
                     // The tab's catalog scope is based on the resolved save kind;
@@ -645,7 +650,7 @@ namespace DDV_SaveEditor_G
             bool readOnlyTab = CurrentTab == "Mounts" || (IsCurrentStorageTab &&
                 (!TryGetCurrentStorageInfo(out var storageInfo) || !ListInventoryModule.IsEditableType(storageInfo.ItemType)));
             AddItemButton.IsEnabled = !readOnlyTab;
-            RemoveSelectedButton.IsEnabled = !readOnlyTab;
+            RemoveSelectedButton.IsEnabled = !readOnlyTab && CurrentTab != "Tools";
             UpdateCollectionHelpText();
         }
 
@@ -662,6 +667,7 @@ namespace DDV_SaveEditor_G
                 "Backpack" => "Backpack: items are stored in inventory slots. The game decides which items belong here.",
                 "Pets" => "Companions: pets and critters are stored in the companion collection. New entries may show a save-format warning.",
                 "Mounts" => "Mounts are progression records. This section is read-only until their save format is verified.",
+                "Tools" => "Tools & accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
                 _ when TryGetCurrentStorageItemType(out var itemType) && !storageInfos.ContainsKey(itemType) =>
                     $"{DisplayInventoryType(itemType)} is not present in this save.",
@@ -1018,6 +1024,22 @@ namespace DDV_SaveEditor_G
             var table = MountModule.MapMounts(jsonData);
             MountsDataGrid.ItemsSource = table.DefaultView;
             MountsStatusText.Text = $"Unlocked mounts: {table.Rows.Count}. You can add a catalog mount with Find & Add Items. New entries are experimental and include only MountItemID; bond and customization are not initialized.";
+        }
+
+        private void PopulateTools()
+        {
+            if (jsonData == null)
+            {
+                ToolsDataGrid.ItemsSource = null;
+                ToolsStatusText.Text = "Load a save to see your tools and accessories.";
+                return;
+            }
+
+            var table = ToolModule.MapTools(jsonData);
+            ToolsDataGrid.ItemsSource = table.DefaultView;
+            int accessories = table.AsEnumerable().Count(r => r.Field<string>("Kind") == "Accessory");
+            ToolsStatusText.Text = $"Tools and accessories: {table.Rows.Count} ({accessories} accessories). " +
+                                   "Find an umbrella or parasol in the catalog and click Add item; it is added unequipped.";
         }
 
         private void UpdateCurrentPetText()
@@ -1430,6 +1452,8 @@ namespace DDV_SaveEditor_G
             int flags = ItemPlacement.MarkCollected(jsonData, id);
             if (placement.Kind == PlacementKind.Mount)
                 PopulateMounts();
+            if (placement.Kind == PlacementKind.Tool)
+                PopulateTools();
             var itemRow = ItemDatabase.Find(idTxt);
             string safety = ItemDatabase.Get(itemRow, "SAFETY", "");
             string risk = placement.Warning ?? (safety == "CAUTION"
@@ -1461,6 +1485,9 @@ namespace DDV_SaveEditor_G
             {
                 case "Mounts":
                     MessageBox.Show("Mounts are progression objects and can only be viewed in this version.", "Read-Only Section");
+                    return;
+                case "Tools":
+                    MessageBox.Show("Tools and accessories can be added, but not removed: the game links tools to upgrades and to the one in use.", "Read-Only Section");
                     return;
                 case "Pets":
                     var pets = PetDataGrid.SelectedItems.Cast<DataRowView>().ToList();

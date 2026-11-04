@@ -63,6 +63,12 @@ namespace DDV_SaveEditor_G.Modules
             if (row == null)
                 return Unsupported("Unknown ID — its in-game location is not known. Choose a destination section manually.");
 
+            // Held accessories (umbrellas, parasols, balloons…) live in Player.Tools like the
+            // shovel or the rod. Rubyelf lists newer ones under "Accessory" before a dump gives
+            // them a TYPE; tool upgrades stay excluded.
+            if (type.Length == 0 && ItemDatabase.Get(row, "CATEGORY", "") == "Accessory")
+                type = "Tool";
+
             switch (type)
             {
                 case "ActivityItem":

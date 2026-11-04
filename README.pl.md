@@ -42,6 +42,8 @@ więc nie potrzebujesz żadnych innych narzędzi.
 4. Kliknij **Find Game Save** i wybierz swój zapis.
 5. Znajdź przedmiot: wpisz nazwę w **Item name**, kliknij go na liście, ustaw **Amount**,
    kliknij **Add item**. Sam trafi we właściwe miejsce (plecak, szafa, meble...).
+   Parasolki, parasole i inne rzeczy trzymane w ręce to nie ubrania: znajdziesz je w zakładce
+   **Tools & Accessories**.
 
    ![Wyszukiwanie i dodawanie przedmiotu](docs/img/dl-satchel-add-item.png)
 

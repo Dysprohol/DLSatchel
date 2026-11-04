@@ -476,6 +476,33 @@
                         </Grid>
                     </TabItem>
 
+                    <!-- Tools and held accessories (umbrellas, parasols…) = Player.Tools; adding only. -->
+                    <TabItem Tag="Tools">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal"><Border Background="#B9C7DE" CornerRadius="4" Padding="2" Margin="0,0,5,0" VerticalAlignment="Center"><Image Source="/DLSatchel;component/Assets/Icons/tools.png" Width="13" Height="13"/></Border><TextBlock Text="Tools &amp; Accessories" VerticalAlignment="Center"/></StackPanel>
+                        </TabItem.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Name="ToolsStatusText" Grid.Row="0" Margin="4,2,4,6" TextWrapping="Wrap"
+                                       Foreground="{StaticResource DreamlightMint}"
+                                       Text="Load a save to see your tools and accessories."/>
+                            <DataGrid Name="ToolsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                                      CanUserAddRows="False" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Item ID" Binding="{Binding [Item ID]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" Width="*"/>
+                                    <DataGridTextColumn Header="In-game Name" Binding="{Binding [In-game Name]}" Width="*"/>
+                                    <DataGridTextColumn Header="Kind" Binding="{Binding [Kind]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="In use" Binding="{Binding [In use]}" Width="Auto"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
                     <!-- Clothes: szafa gracza = Player.ListInventories z CompatibleItemType "ItemType_Clothing" -->
                     <TabItem Tag="Clothes">
                         <TabItem.Header>
