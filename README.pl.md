@@ -6,74 +6,82 @@ Dodawaj przedmioty, ubrania, meble, towarzyszy i monety do swojego zapisu na PC.
 <a href="README.md">English version</a>
 </p>
 
-![Edytor z otwartym zapisem](docs/img/dl-satchel-overview.png)
+![Edytor z otwartym zapisem](docs/img/screen-overview.png)
 
-Cała Twoja gra siedzi w jednym pliku na komputerze. Ten program pokazuje go jako zwykłe listy:
-wybierasz, co dodać albo usunąć, klikasz **Save Changes**, uruchamiasz grę - gotowe. Za każdym
-razem robi kopię zapasową, więc zawsze możesz wrócić.
+Cała Twoja gra siedzi w jednym pliku na komputerze. DL Satchel otwiera ten plik i pokazuje go jako
+zwykłe listy. Wybierasz, co chcesz, klikasz **Save Changes**, uruchamiasz grę - i to już tam jest.
 
-Gra trzyma zapis **zaszyfrowany**. Edytor sam go odszyfrowuje i przy zapisie szyfruje z powrotem,
-więc nie potrzebujesz żadnych innych narzędzi.
+Nie musisz znać się na plikach. Gra szyfruje zapis, a edytor sam sobie z tym radzi. Przed każdym
+zapisem robi kopię zapasową, więc zawsze możesz wrócić.
 
 > Nieoficjalne, zrobione przez fana. Tylko wersja na PC. Zmiana zapisu na własne ryzyko.
 
-## Potrzebujesz dwóch rzeczy
+## Czego potrzebujesz
 
-1. **Edytora** - pobierz `DLSatchel.exe` z
-   [Releases](https://github.com/Dysprohol/DLSatchel/releases). Jeden plik, nic się nie
-   instaluje.
-2. **List przedmiotów (pliki Excel)** - **bez nich edytor nie działa**. Tworzą je gracze na forum
-   FearLess Revolution:
-   - **Dump przedmiotów KOSDDV** - otwórz [ten arkusz Google](https://docs.google.com/spreadsheets/d/1uxiBlhMhTtuo7xMd5gGsj7H7GyowfOlJqfA-R_i5jjM/edit)
-     i kliknij **Plik > Pobierz > Microsoft Excel (.xlsx)**.
-   - **Lista ID od Rubyelf** - otwórz [ten arkusz Google](https://docs.google.com/spreadsheets/d/1bBrfqq6m9qqZDXFVtqf646xD5LvLM2W1q1YTH0YVoZo/edit)
-     i kliknij **Plik > Pobierz > Microsoft Excel (.xlsx)**.
+1. **DL Satchel** - pobierz `DLSatchel.exe` z
+   [Releases](https://github.com/Dysprohol/DLSatchel/releases). To jeden plik, nic się nie instaluje.
+2. **Dwóch list przedmiotów (pliki Excel)** - **bez nich edytor nie działa**. Prowadzą je gracze
+   z forum FearLess Revolution. Otwórz każdy link i kliknij
+   **Plik > Pobierz > Microsoft Excel (.xlsx)**:
+   - [dump przedmiotów KOSDDV](https://docs.google.com/spreadsheets/d/1uxiBlhMhTtuo7xMd5gGsj7H7GyowfOlJqfA-R_i5jjM/edit)
+   - [lista ID od Rubyelf](https://docs.google.com/spreadsheets/d/1bBrfqq6m9qqZDXFVtqf646xD5LvLM2W1q1YTH0YVoZo/edit)
 
-   Najlepiej użyć obu. Nowe przedmioty i pytania:
-   [wątek na forum](https://fearlessrevolution.com/viewtopic.php?f=2&t=21330),
+   Nowe przedmioty i pytania: [wątek na forum](https://fearlessrevolution.com/viewtopic.php?f=2&t=21330),
    gdzie piszą autorzy list.
 
 ## Jak używać
 
 1. **Zamknij grę.**
-2. Uruchom edytor (jeśli Windows ostrzega: **Więcej informacji > Uruchom mimo to**).
-3. Kliknij **Item Catalog** i wybierz plik Excel; drugi dodaj przyciskiem **+ Add Catalog**.
-   Robisz to tylko raz.
+2. Uruchom `DLSatchel.exe`. Jeśli Windows ostrzega, kliknij **Więcej informacji > Uruchom mimo to**.
+3. Kliknij **Item Catalog** i wybierz pierwszy plik Excel, a potem **+ Add Catalog** dla drugiego.
+   Robisz to tylko raz - edytor je zapamiętuje.
 4. Kliknij **Find Game Save** i wybierz swój zapis.
-5. Znajdź przedmiot: wpisz nazwę w **Item name**, kliknij go na liście, ustaw **Amount**,
-   kliknij **Add item**. Sam trafi we właściwe miejsce (plecak, szafa, meble...).
-   Parasolki, parasole i inne rzeczy trzymane w ręce to nie ubrania: znajdziesz je w zakładce
-   **Tools & Accessories**.
+5. Wpisz nazwę w **Item name**, kliknij przedmiot na liście, ustaw **Amount** i kliknij **Add item**
+   (albo po prostu kliknij przedmiot dwa razy). Edytor sam włoży go we właściwe miejsce.
 
-   ![Wyszukiwanie i dodawanie przedmiotu](docs/img/dl-satchel-add-item.png)
+   ![Wyszukiwanie i dodawanie przedmiotu](docs/img/screen-add-item.png)
 
-6. Żeby coś usunąć, otwórz kolekcję po prawej, zaznacz i kliknij **Remove selected**.
-   Monety i poziom zmieniasz na górze po lewej.
-7. Kliknij **Save Changes**, potwierdź i uruchom grę.
+6. Żeby coś usunąć, otwórz kolekcję po prawej (np. **Furniture**), zaznacz przedmiot i kliknij
+   **Remove selected**. Monety i poziom są na górze po lewej.
 
-![Twoje kolekcje](docs/img/dl-satchel-collection.png)
+   ![Twoje meble](docs/img/screen-collection.png)
 
-## Aktualizacje
+7. Kliknij **Save Changes**. Edytor pokaże, co się zmieni (np. „Backpack”), i poprosi
+   o potwierdzenie. Potem uruchom grę.
 
-W prawym górnym rogu edytora: **GitHub** otwiera tę stronę, **Check for updates** sprawdza na
-GitHubie, czy jest nowsza wersja. Jeśli jest, kliknij **Update now** - edytor ją pobierze, sprawdzi
-i uruchomi się ponownie. Zaznacz **Check at start**, żeby sprawdzał przy każdym uruchomieniu;
-inaczej sam z siebie nie łączy się z internetem.
+## Parasolki i parasole
 
-## Oznaczenia bezpieczeństwa
+Rzeczy, które postać trzyma w ręce - parasolki, parasole i podobne - to **nie ubrania**. Gra trzyma je
+razem z narzędziami. Otwórz zakładkę **Tools & Accessories**, znajdź przedmiot i kliknij
+**Add item**. Zostanie dodany jako nieużywany, więc wybierzesz go w grze.
 
-| | |
+![Narzędzia i akcesoria](docs/img/screen-tools.png)
+
+## Co znaczą oznaczenia
+
+Każdy przedmiot na liście ma oznaczenie w kolumnie **Safety**:
+
+| Oznaczenie | Co znaczy |
 |---|---|
 | **SAFE** | Zwykły przedmiot. |
 | **CAUTION** (brązowy wiersz) | Z questa, eventu albo sklepu. Dodany za wcześnie może zablokować quest. |
 | **UNSAFE** | Zepsuty albo testowy, może uszkodzić zapis. Ukryty, dopóki go nie włączysz. |
 | **UNKNOWN** | Listy mówią o nim za mało. |
 
+## Aktualizacje
+
+W prawym górnym rogu edytora kliknij **Check for updates**. Jeśli jest nowsza wersja, kliknij
+**Update now** - edytor ją pobierze, sprawdzi i uruchomi się ponownie. Zaznacz **Check at start**,
+żeby sprawdzał przy każdym uruchomieniu; inaczej sam z siebie nie łączy się z internetem.
+
 ## Powrót do poprzedniego stanu
 
-Obok zapisu edytor trzyma `profile.json.bak` (sprzed pierwszej zmiany) i
-`profile.json.backup-<data>` (sprzed każdego zapisu). Zamknij grę, zmień nazwę wybranej kopii
-na `profile.json` i gotowe. Folder zapisu:
+Obok zapisu edytor trzyma dwa rodzaje kopii:
+
+- `profile.json.bak` - zapis sprzed pierwszej zmiany,
+- `profile.json.backup-<data>` - kopia sprzed każdego zapisu.
+
+Żeby wrócić: zamknij grę i zmień nazwę wybranej kopii na `profile.json`. Folder zapisu to
 `%USERPROFILE%\AppData\LocalLow\Gameloft\Disney Dreamlight Valley` (wklej w Eksplorator plików).
 
 ## Wsparcie
@@ -90,7 +98,7 @@ dotnet build DLSatchel.sln
 dotnet test tests/DLSatchel.Tests
 ```
 
-Opublikuj `src/DLSatchel` profilem `FolderProfile`, a jednoplikowy `.exe` trafi do
-`output\`. Część testów potrzebuje obu plików Excel w folderze `pliki_testowe` obok solucji.
+Opublikuj `src/DLSatchel` profilem `FolderProfile`, a jednoplikowy `.exe` trafi do `output\`.
+Część testów potrzebuje obu plików Excel w folderze `pliki_testowe` obok solucji.
 
 </details>
