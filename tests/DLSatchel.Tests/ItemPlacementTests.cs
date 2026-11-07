@@ -237,6 +237,31 @@ namespace DDV.SaveEditor.Tests
         }
 
         [Fact]
+        public async Task GameloftPresets_FromTheNewerKosddvDump_StayPresets()
+        {
+            // Newer KOSDDV dumps list presets as ActivityData, which otherwise means "not an item".
+            // The dump wins over Rubyelf, so its TYPE must not hide the presets.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string dump = XlsxBuilder.WriteCsv(Path.Combine(directory, "dump.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE,SUBTYPE,ONLINE_TAG\n" +
+                "2050500016,PremadeDecorationPreset/PremadeKnightCastleBundle,Knight Castle Preset,ActivityData,True,Premium\n" +
+                "2050100001,CookingRecipe/Salad,Salad,ActivityData,,\n");
+            string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes,Catalogue Category\n" +
+                "7A3F0C08,2050500016,,Preset,Knight Castle Preset,Premium\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((dump, 10), (rubyelf, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var knight = catalog.Get(2050500016)!;
+            Assert.Equal(("Knight Castle Preset", ItemKind.DecorationPreset, PlacementHint.DecorationPreset),
+                         (knight.DisplayName, knight.Kind, knight.Placement));
+            Assert.Equal(ItemKind.Recipe, catalog.Get(2050100001)!.Kind);   // other ActivityData unchanged
+
+            var save = JObject.Parse("""{ "Player": { "PremadeDecorationPresets": { "DecorationPresets": [] } } }""");
+            Assert.Equal(PlacementKind.DecorationPreset, ItemPlacement.Resolve(save, "2050500016").Kind);
+        }
+
+        [Fact]
         public async Task HeldAccessories_GoToToolsUnequipped_EvenWithoutAType()
         {
             // Parasols and umbrellas are not clothing: the game keeps them in Player.Tools.

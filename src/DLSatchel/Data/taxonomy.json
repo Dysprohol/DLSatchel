@@ -43,6 +43,13 @@
     },
     {
       "type": "ActivityData",
+      "namePrefix": "PremadeDecorationPreset",
+      "kind": "DecorationPreset",
+      "placement": "DecorationPreset",
+      "_comment": "KOSDDV dump (2026): Gameloft presets are ActivityData/PremadeDecorationPreset/..., the same records as itemlist/ActivityData.json. Unlocked in Player.PremadeDecorationPresets."
+    },
+    {
+      "type": "ActivityData",
       "kind": "Unknown",
       "placement": "None",
       "_comment": "Catch-all for ActivityData: never a backpack item."
