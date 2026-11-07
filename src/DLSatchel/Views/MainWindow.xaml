@@ -522,6 +522,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Preset ID" Binding="{Binding [Preset ID]}" Width="Auto"/>
                                     <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" Width="*"/>
+                                    <DataGridTextColumn Header="Furniture" Binding="{Binding [Furniture]}" Width="Auto"/>
                                     <DataGridTextColumn Header="Favorite" Binding="{Binding [Favorite]}" Width="Auto"/>
                                 </DataGrid.Columns>
                             </DataGrid>

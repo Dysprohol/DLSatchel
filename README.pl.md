@@ -63,10 +63,13 @@ Gotowe zestawy dekoracji od Gameloftu (np. „Knight Castle Preset” albo „Ha
 Preset”) są w zakładce **Presets**. Wybierz jeden i kliknij **Add item** - po zapisaniu pojawi się
 w grze w menu presetów.
 
+Preset da się postawić tylko wtedy, gdy masz jego meble. Przy dodawaniu edytor pokaże, których
+brakuje, i może je od razu dodać do Twojego magazynu mebli.
+
 Większość presetów pochodzi ze sklepu. Te, które listy opisują jako „unreleased”, są na początku
 ukryte: odznacz **Hide risky or unfinished items**, żeby je zobaczyć.
 
-![Presety dekoracji](docs/img/screen-presets.png)
+![Presety dekoracji](docs/img/screen-presets-furniture.png)
 
 ## Co znaczą oznaczenia
 

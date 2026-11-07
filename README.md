@@ -63,10 +63,13 @@ Gameloft's ready-made decoration sets (for example "Knight Castle Preset" or "Ha
 Preset") are on the **Presets** tab. Pick one and click **Add item** - after saving, it shows up in
 the game's preset menu.
 
+A preset can only be placed if you own its furniture. When you add one, the editor shows which
+pieces you are missing and can add them to your furniture storage in one go.
+
 Most presets come from the shop. The ones the lists call "unreleased" are hidden at first: untick
 **Hide risky or unfinished items** to see them.
 
-![Decoration presets](docs/img/screen-presets.png)
+![Decoration presets](docs/img/screen-presets-furniture.png)
 
 ## What the labels mean
 

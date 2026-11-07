@@ -15,6 +15,7 @@ namespace DDV_SaveEditor_G.Modules
             var table = new DataTable("Presets");
             table.Columns.Add("Preset ID", typeof(long));
             table.Columns.Add("Name", typeof(string));
+            table.Columns.Add("Furniture", typeof(string));
             table.Columns.Add("Favorite", typeof(string));
 
             if (ItemPlacement.PresetList(root) is not JArray presets)
@@ -27,9 +28,11 @@ namespace DDV_SaveEditor_G.Modules
             {
                 long id = (long)entry;
                 var item = ItemDatabase.Find(id);
+                var layout = PresetLayouts.Get(id);
                 table.Rows.Add(
                     id,
                     item == null ? "(not in catalog)" : ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME"),
+                    layout == null ? "?" : $"{layout.Pieces} pieces",
                     favorites.Contains(id) ? "Yes" : "No");
             }
 

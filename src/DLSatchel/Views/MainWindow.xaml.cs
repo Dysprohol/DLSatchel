@@ -673,7 +673,7 @@ namespace DDV_SaveEditor_G
                 "Pets" => "Companions: pets and critters are stored in the companion collection. New entries may show a save-format warning.",
                 "Mounts" => "Mounts are progression records. This section is read-only until their save format is verified.",
                 "Tools" => "Tools & accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
-                "Presets" => "Presets: Gameloft's ready-made decoration sets. An added preset shows up in the game's preset menu; removing is not supported.",
+                "Presets" => "Presets: Gameloft's ready-made decoration sets. A preset needs its furniture to be placed, so the editor offers to add what is missing. Removing is not supported.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
                 _ when TryGetCurrentStorageItemType(out var itemType) && !storageInfos.ContainsKey(itemType) =>
                     $"{DisplayInventoryType(itemType)} is not present in this save.",
@@ -1061,8 +1061,10 @@ namespace DDV_SaveEditor_G
             PresetsDataGrid.ItemsSource = table.DefaultView;
             PresetsStatusText.Text = ItemPlacement.PresetList(jsonData) == null
                 ? "This save has no preset list, so presets cannot be added."
-                : $"Unlocked presets: {table.Rows.Count}. Find a preset in the catalog and click Add item. " +
-                  "Most are shop items; unreleased ones are hidden unless you untick \"Hide risky or unfinished items\".";
+                : $"Unlocked presets: {table.Rows.Count}. Find a preset in the catalog and click Add item - " +
+                  "the editor also offers the furniture it needs " +
+                  $"(layouts of {PresetLayouts.All.Count} presets, from the {PresetLayouts.Source}). " +
+                  "Unreleased presets are hidden unless you untick \"Hide risky or unfinished items\".";
         }
 
         private void UpdateCurrentPetText()
@@ -1460,8 +1462,7 @@ namespace DDV_SaveEditor_G
                     break;
 
                 case PlacementKind.DecorationPreset:
-                    added = ItemPlacement.AddPreset(jsonData, id);
-                    if (!added) extra = " — already unlocked";
+                    (added, extra) = AddPresetWithFurniture(id);
                     break;
 
                 default:
