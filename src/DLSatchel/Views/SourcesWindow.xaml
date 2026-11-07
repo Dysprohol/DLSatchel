@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DDV_SaveEditor_G"
         mc:Ignorable="d"
-        Title="Item Catalog Sources" Height="600" Width="900"
+        Title="Item Catalog Sources" Height="600" Width="1180"
         Icon="/DLSatchel;component/Assets/Icons/logo.png"
         Background="{StaticResource WindowBackground}" Foreground="{StaticResource Starlight}"
         FontFamily="Segoe UI" FontSize="13"
@@ -24,11 +24,15 @@
         </Grid.RowDefinitions>
 
         <!-- Toolbar -->
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,8">
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,36">
             <Button x:Name="BtnAddFile" Content="＋ Add Excel" Click="BtnAddFile_Click" Margin="0,0,8,0" Padding="8,4"
                     ToolTip="Add catalogs next to the enabled ones; they are merged by priority (lower number wins)"/>
             <Button x:Name="BtnReplaceFile" Content="Use Only…" Click="BtnReplaceFile_Click" Margin="0,0,8,0" Padding="8,4"
                     ToolTip="Choose catalogs and disable all others"/>
+            <Button x:Name="BtnAddLink" Content="＋ Add from link…" Click="BtnAddLink_Click" Margin="0,0,8,0" Padding="8,4"
+                    ToolTip="Download an item list from a Google Sheets link and add it"/>
+            <Button x:Name="BtnUpdateLinks" Content="⇩ Update from links" Click="BtnUpdateLinks_Click" Margin="0,0,8,0" Padding="8,4"
+                    ToolTip="Download a fresh copy of every enabled list that has a link. A file is replaced only if the new copy reads correctly."/>
             <Button x:Name="BtnRemove" Content="✕ Remove" Click="BtnRemove_Click" Margin="0,0,8,0" Padding="8,4"
                     ToolTip="Remove the selected source from the list (the file is not deleted)"/>
             <Button x:Name="BtnReload" Content="↻ Reload" Click="BtnReload_Click" Margin="0,0,8,0" Padding="8,4"
@@ -36,9 +40,8 @@
             <Button x:Name="BtnExportJson" Content="Export JSON" Click="BtnExportJson_Click" Margin="0,0,8,0" Padding="8,4"/>
             <Button x:Name="BtnExportMd" Content="Export Markdown" Click="BtnExportMd_Click" Margin="0,0,8,0" Padding="8,4"/>
             <Button x:Name="BtnOpenCache" Content="Open Cache Folder" Click="BtnOpenCache_Click" Margin="0,0,8,0" Padding="8,4"/>
-            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Width="12"/>
-            <TextBlock x:Name="TxtSummary" VerticalAlignment="Center" FontWeight="Bold"/>
         </StackPanel>
+        <TextBlock x:Name="TxtSummary" Grid.Row="0" VerticalAlignment="Bottom" FontWeight="Bold" Margin="0,0,0,8"/>
 
         <!-- Main grid -->
         <DataGrid x:Name="SourcesGrid" Grid.Row="1" AutoGenerateColumns="False"
@@ -51,6 +54,8 @@
                 <DataGridCheckBoxColumn Header="✓" Binding="{Binding Enabled, Mode=TwoWay}" Width="35"/>
                 <DataGridTextColumn Header="Priority" Binding="{Binding Priority, Mode=TwoWay}" Width="60" ElementStyle="{StaticResource MonoStyle}"/>
                 <DataGridTextColumn Header="File" Binding="{Binding FileName}" Width="220" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Link (paste a new one if it changes)" Binding="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="240"/>
+                <DataGridTextColumn Header="Updated" Binding="{Binding Updated}" Width="110" IsReadOnly="True" ElementStyle="{StaticResource MonoStyle}"/>
                 <DataGridTextColumn Header="Format" Binding="{Binding Format}" Width="50" IsReadOnly="True" ElementStyle="{StaticResource MonoStyle}"/>
                 <DataGridTextColumn Header="Sheets" Binding="{Binding TotalSheets}" Width="55" IsReadOnly="True" ElementStyle="{StaticResource MonoStyle}"/>
                 <DataGridTextColumn Header="Rows" Binding="{Binding RowsRead}" Width="70" IsReadOnly="True" ElementStyle="{StaticResource MonoStyle}"/>

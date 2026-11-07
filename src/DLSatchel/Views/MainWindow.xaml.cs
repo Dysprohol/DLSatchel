@@ -377,22 +377,56 @@ namespace DDV_SaveEditor_G
             }
 
             var issues = SaveValidationModule.Analyze(jsonData);
-            if (issues.Count == 0)
+            var unknown = SaveItemIds.NotInCatalog(jsonData);
+            if (issues.Count == 0 && unknown.Count == 0)
             {
-                MessageBox.Show("No known placement issues were found. This check cannot confirm every unknown game field.",
+                MessageBox.Show("No known placement issues were found, and every item in the save is in your item lists. " +
+                                "This check cannot confirm every unknown game field.",
                                 "Save Check", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            const int visibleLimit = 24;
-            string details = string.Join("\n\n", issues.Take(visibleLimit).Select(issue =>
-                $"[{issue.Level}] {issue.Path}\n{issue.Message}"));
-            if (issues.Count > visibleLimit)
-                details += $"\n\n… and {issues.Count - visibleLimit} more item(s).";
+            var parts = new List<string>();
+            if (unknown.Count > 0)
+                parts.Add(UnknownItemsText(unknown));
 
-            MessageBox.Show($"Read-only check: {issues.Count} note(s). Nothing was changed.\n\n{details}",
+            if (issues.Count > 0)
+            {
+                const int visibleLimit = 24;
+                string details = string.Join("\n\n", issues.Take(visibleLimit).Select(issue =>
+                    $"[{issue.Level}] {issue.Path}\n{issue.Message}"));
+                if (issues.Count > visibleLimit)
+                    details += $"\n\n… and {issues.Count - visibleLimit} more item(s).";
+                parts.Add($"{issues.Count} note(s):\n\n{details}");
+            }
+            else
+            {
+                parts.Add("No known placement issues were found.");
+            }
+
+            MessageBox.Show($"Read-only check. Nothing was changed.\n\n{string.Join("\n\n────────\n\n", parts)}",
                             "Save Check", MessageBoxButton.OK,
                             issues.Any(i => i.Level == SaveIssueLevel.Error) ? MessageBoxImage.Warning : MessageBoxImage.Information);
+        }
+
+        /// <summary>Items a newer game update added that the item lists do not have yet.</summary>
+        private static string UnknownItemsText(List<(long Id, string Section)> unknown)
+        {
+            const int visibleLimit = 12;
+            var lines = unknown.GroupBy(u => u.Section)
+                .SelectMany(g => g.Select(u => $"• {u.Id}  ({g.Key})"))
+                .Take(visibleLimit)
+                .ToList();
+            if (unknown.Count > visibleLimit)
+                lines.Add($"… and {unknown.Count - visibleLimit} more.");
+            string sections = string.Join(", ", unknown.GroupBy(u => u.Section)
+                .Select(g => $"{g.Key} {g.Count()}"));
+
+            return $"Your item lists do not know {unknown.Count} item(s) in this save ({sections}). " +
+                   "Usually the lists are older than your game. Open Sources… and click Update from links. " +
+                   "If some items are still unknown after that, the list authors have not added them yet. " +
+                   "Until then these items cannot be checked or added.\n\n" +
+                   string.Join("\n", lines);
         }
 
         private void CompareSaves_Click(object sender, RoutedEventArgs e)
@@ -462,56 +496,7 @@ namespace DDV_SaveEditor_G
         }
 
         private static HashSet<long> GetOwnedCatalogIds(JObject? root)
-        {
-            var ids = new HashSet<long>();
-            if (root?["Player"] is not JObject player) return ids;
-
-            if (player["ListInventories"] is JObject inventories)
-                foreach (var inventory in inventories.Properties())
-                    if (inventory.Value["Inventory"] is JObject items)
-                        foreach (var item in items.Properties()) AddOwnedId(ids, item.Name);
-
-            // Only the player's backpack, never other ContainerInventories (character data).
-            if (player["ContainerInventories"]?["0"]?["Inventory"] is JArray backpack)
-                foreach (var item in backpack) AddOwnedId(ids, item?["ItemID"]?.ToString());
-            AddOwnedArray(ids, player["Pets"] as JArray, "PetItemID");
-            AddOwnedArray(ids, player["Mounts"] as JArray, "MountItemID");
-            AddOwnedArray(ids, player["Tools"] as JArray, "ToolItemID");
-            AddOwnedArray(ids, player["PremadeDecorationPresets"]?["DecorationPresets"] as JArray, "PresetID");
-            AddOwnedArray(ids, player["Cookbook"]?["Recipes"] as JArray, "RecipeID");
-            AddOwnedArray(ids, player["UnlockedCraftingRecipes"] as JArray, "RecipeID");
-            if (player["CurrencyAmounts"] is JObject currencies)
-                foreach (var currency in currencies.Properties()) AddOwnedId(ids, currency.Name);
-
-            // CollectionSets are the game's explicit collected/unlocked flags; read only.
-            if (player["CollectionSets"] is JArray sets)
-                foreach (var items in sets.OfType<JObject>()
-                             .SelectMany(set => set["GroupData"]?.OfType<JObject>() ?? Enumerable.Empty<JObject>())
-                             .Select(group => group["GroupsCollectionItems"] as JObject))
-                    if (items != null)
-                        foreach (var item in items.Properties())
-                            if (item.Value.Type == JTokenType.Boolean && item.Value.Value<bool>()) AddOwnedId(ids, item.Name);
-            return ids;
-        }
-
-        private static void AddOwnedArray(HashSet<long> ids, JArray? values, string objectKey)
-        {
-            if (values == null) return;
-            foreach (var value in values)
-            {
-                if (value is JObject obj)
-                {
-                    AddOwnedId(ids, obj[objectKey]?.ToString());
-                    if (obj[objectKey] == null && obj["ItemID"] != null) AddOwnedId(ids, obj["ItemID"]!.ToString());
-                }
-                else AddOwnedId(ids, value.ToString());
-            }
-        }
-
-        private static void AddOwnedId(HashSet<long> ids, string? value)
-        {
-            if (long.TryParse(value, out long id) && id > 0) ids.Add(id);
-        }
+            => new(SaveItemIds.Collect(root).Keys);
 
         private void ApplyFilters()
         {

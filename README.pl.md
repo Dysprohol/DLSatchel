@@ -20,9 +20,8 @@ zapisem robi kopię zapasową, więc zawsze możesz wrócić.
 
 1. **DL Satchel** - pobierz `DLSatchel.exe` z
    [Releases](https://github.com/Dysprohol/DLSatchel/releases). To jeden plik, nic się nie instaluje.
-2. **Dwóch list przedmiotów (pliki Excel)** - **bez nich edytor nie działa**. Prowadzą je gracze
-   z forum FearLess Revolution. Otwórz każdy link i kliknij
-   **Plik > Pobierz > Microsoft Excel (.xlsx)**:
+2. **Dwóch list przedmiotów** - **bez nich edytor nie działa**. Prowadzą je gracze z forum
+   FearLess Revolution, a edytor sam je pobiera (krok 3):
    - [dump przedmiotów KOSDDV](https://docs.google.com/spreadsheets/d/1uxiBlhMhTtuo7xMd5gGsj7H7GyowfOlJqfA-R_i5jjM/edit)
    - [lista ID od Rubyelf](https://docs.google.com/spreadsheets/d/1bBrfqq6m9qqZDXFVtqf646xD5LvLM2W1q1YTH0YVoZo/edit)
 
@@ -33,8 +32,9 @@ zapisem robi kopię zapasową, więc zawsze możesz wrócić.
 
 1. **Zamknij grę.**
 2. Uruchom `DLSatchel.exe`. Jeśli Windows ostrzega, kliknij **Więcej informacji > Uruchom mimo to**.
-3. Kliknij **Item Catalog** i wybierz pierwszy plik Excel, a potem **+ Add Catalog** dla drugiego.
-   Robisz to tylko raz - edytor je zapamiętuje.
+3. Kliknij **Sources…**, a potem **+ Add from link…**. Kliknij **Rubyelf ID list** i **Download and add**.
+   To samo zrób z **KOSDDV item dump**. Robisz to tylko raz - edytor je zapamiętuje.
+   (Masz już pliki Excel? Kliknij **Item Catalog** i **+ Add Catalog** i wybierz je.)
 4. Kliknij **Find Game Save** i wybierz swój zapis.
 5. Wpisz nazwę w **Item name**, kliknij przedmiot na liście, ustaw **Amount** i kliknij **Add item**
    (albo po prostu kliknij przedmiot dwa razy). Edytor sam włoży go we właściwe miejsce.
@@ -70,6 +70,17 @@ Większość presetów pochodzi ze sklepu. Te, które listy opisują jako „unr
 ukryte: odznacz **Hide risky or unfinished items**, żeby je zobaczyć.
 
 ![Presety dekoracji](docs/img/screen-presets-furniture.png)
+
+## Po aktualizacji gry
+
+Nowe przedmioty pojawiają się w edytorze, gdy autorzy list je dopiszą. Kliknij **Sources…**
+i **Update from links**, żeby pobrać świeże listy. Lista zostaje podmieniona tylko wtedy, gdy nowa
+kopia wczyta się poprawnie, więc zepsuty albo wyczyszczony arkusz niczego nie popsuje. Jeśli lista
+zmieni adres, wklej nowy link w kolumnie **Link**.
+
+**Check Save** powie Ci, czy w zapisie są przedmioty, których listy jeszcze nie znają.
+
+![Listy przedmiotów z linkami](docs/img/screen-sources.png)
 
 ## Co znaczą oznaczenia
 

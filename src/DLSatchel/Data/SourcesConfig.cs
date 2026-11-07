@@ -23,12 +23,20 @@ namespace DDV_SaveEditor_G.Data
         /// <summary>Sheet name → manual column mapping (wins over auto-detection).</summary>
         public Dictionary<string, SheetMappingOverride> MappingOverrides { get; set; } = new();
 
+        /// <summary>Where a fresh copy of this list is downloaded from (Google Sheets or a file link).</summary>
+        public string? Url { get; set; }
+
+        /// <summary>When the file was last replaced by a download from <see cref="Url"/>.</summary>
+        public DateTime? UpdatedUtc { get; set; }
+
         public CatalogSourceConfig Clone() => new()
         {
             Path = Path,
             Enabled = Enabled,
             Priority = Priority,
             TreatAsHistory = TreatAsHistory,
+            Url = Url,
+            UpdatedUtc = UpdatedUtc,
             MappingOverrides = MappingOverrides.ToDictionary(
                 kv => kv.Key,
                 kv => kv.Value.Clone(),

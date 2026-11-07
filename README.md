@@ -20,9 +20,8 @@ handles that by itself. Before every save it makes a backup, so you can always g
 
 1. **DL Satchel** - download `DLSatchel.exe` from
    [Releases](https://github.com/Dysprohol/DLSatchel/releases). It is one file, nothing to install.
-2. **Two item lists (Excel files)** - the editor does **not** work without them. Players on the
-   FearLess Revolution forum keep them up to date. Open each link and click
-   **File > Download > Microsoft Excel (.xlsx)**:
+2. **Two item lists** - the editor does **not** work without them. Players on the FearLess
+   Revolution forum keep them up to date, and the editor downloads them for you (step 3):
    - [KOSDDV item dump](https://docs.google.com/spreadsheets/d/1uxiBlhMhTtuo7xMd5gGsj7H7GyowfOlJqfA-R_i5jjM/edit)
    - [Rubyelf's ID list](https://docs.google.com/spreadsheets/d/1bBrfqq6m9qqZDXFVtqf646xD5LvLM2W1q1YTH0YVoZo/edit)
 
@@ -33,8 +32,9 @@ handles that by itself. Before every save it makes a backup, so you can always g
 
 1. **Close the game.**
 2. Start `DLSatchel.exe`. If Windows warns you, click **More info > Run anyway**.
-3. Click **Item Catalog** and pick the first Excel file, then **+ Add Catalog** for the second one.
-   You only do this once - the editor remembers them.
+3. Click **Sources…**, then **+ Add from link…**. Click **Rubyelf ID list** and **Download and add**.
+   Do the same with **KOSDDV item dump**. You only do this once - the editor remembers them.
+   (Already have the Excel files? Click **Item Catalog** and **+ Add Catalog** and pick them instead.)
 4. Click **Find Game Save** and choose your save.
 5. Type a name in **Item name**, click the item in the list, set **Amount** and click **Add item**
    (or just double click the item). The editor puts it in the right place by itself.
@@ -70,6 +70,17 @@ Most presets come from the shop. The ones the lists call "unreleased" are hidden
 **Hide risky or unfinished items** to see them.
 
 ![Decoration presets](docs/img/screen-presets-furniture.png)
+
+## When the game updates
+
+New items show up in the editor once the people who make the lists add them. Click **Sources…** and
+**Update from links** to download fresh lists. A list is only replaced if the new copy reads
+correctly, so a broken or emptied sheet can't spoil anything. If a list moves to a new address,
+paste the new link in the **Link** column.
+
+**Check Save** tells you if your save has items the lists don't know yet.
+
+![Item lists with their links](docs/img/screen-sources.png)
 
 ## What the labels mean
 

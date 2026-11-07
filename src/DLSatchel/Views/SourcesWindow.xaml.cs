@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Input;
 using DDV_SaveEditor_G.Data;
 using DDV_SaveEditor_G.Modules;
 using Microsoft.Win32;
@@ -52,6 +53,8 @@ namespace DDV_SaveEditor_G
                     Path = source.Path,
                     File = source.Path,
                     FileName = Path.GetFileName(source.Path),
+                    Url = !string.IsNullOrWhiteSpace(source.Url) ? source.Url : SourceDownloader.SuggestLink(Path.GetFileName(source.Path)),
+                    Updated = UpdatedText(source),
                     Enabled = source.Enabled,
                     Priority = source.Priority,
                     Format = s?.Format ?? Path.GetExtension(source.Path).TrimStart('.').ToUpperInvariant(),
@@ -132,6 +135,14 @@ namespace DDV_SaveEditor_G
 
         private async void BtnReload_Click(object sender, RoutedEventArgs e)
         {
+            var config = CurrentConfigWithEdits();
+            await ItemDatabase.LoadFromConfigAsync(config);
+            await RefreshAsync();
+        }
+
+        /// <summary>The current config with the checkboxes, priorities and links typed into the grid.</summary>
+        private SourcesConfig CurrentConfigWithEdits()
+        {
             SourcesGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Cell, true);
             SourcesGrid.CommitEdit(System.Windows.Controls.DataGridEditingUnit.Row, true);
             var config = CurrentConfig();
@@ -141,9 +152,117 @@ namespace DDV_SaveEditor_G
                 if (source == null) continue;
                 source.Enabled = row.Enabled;
                 source.Priority = row.Priority;
+                source.Url = string.IsNullOrWhiteSpace(row.Url) ? null : row.Url.Trim();
             }
-            await ItemDatabase.LoadFromConfigAsync(config);
+            return config;
+        }
+
+        private static string UpdatedText(CatalogSourceConfig source)
+        {
+            if (source.UpdatedUtc is DateTime updated)
+                return updated.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+            return File.Exists(source.Path) ? File.GetLastWriteTime(source.Path).ToString("yyyy-MM-dd") : "missing";
+        }
+
+        private static int CurrentItemCount(string path) =>
+            ItemDatabase.DetailedCatalog?.Diagnostics.Sources
+                .FirstOrDefault(d => string.Equals(d.File, path, StringComparison.OrdinalIgnoreCase))?.UniqueIds ?? 0;
+
+        private void SetBusy(bool busy, string? status = null)
+        {
+            foreach (var button in new[] { BtnAddFile, BtnReplaceFile, BtnAddLink, BtnUpdateLinks, BtnRemove, BtnReload })
+                button.IsEnabled = !busy;
+            Mouse.OverrideCursor = busy ? Cursors.Wait : null;
+            if (status != null) TxtSummary.Text = status;
+        }
+
+        private async void BtnUpdateLinks_Click(object sender, RoutedEventArgs e)
+        {
+            var config = CurrentConfigWithEdits();
+            var targets = config.Sources.Where(s => s.Enabled && !string.IsNullOrWhiteSpace(s.Url)).ToList();
+            if (targets.Count == 0)
+            {
+                MessageBox.Show("None of the enabled lists has a link. Paste the sheet's link in the Link column, " +
+                                "or use Add from link.", "Update from links", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var lines = new List<string>();
+            bool anyUpdated = false;
+            try
+            {
+                foreach (var source in targets)
+                {
+                    SetBusy(true, $"Downloading {Path.GetFileName(source.Path)}…");
+                    var result = await SourceDownloader.UpdateAsync(source.Url!, source.Path, CurrentItemCount(source.Path));
+                    if (result.Updated)
+                    {
+                        source.UpdatedUtc = DateTime.UtcNow;
+                        anyUpdated = true;
+                    }
+                    lines.Add($"{(result.Updated ? "✓" : "✗")} {result.FileName}: {result.Message}");
+                }
+
+                SetBusy(true, "Reloading the item catalog…");
+                await ItemDatabase.LoadFromConfigAsync(config);   // also keeps the links in sources.json
+            }
+            finally
+            {
+                SetBusy(false);
+            }
             await RefreshAsync();
+
+            MessageBox.Show(string.Join("\n\n", lines) + (anyUpdated ? "" : "\n\nNo file was changed."),
+                            "Update from links", MessageBoxButton.OK,
+                            lines.Any(l => l.StartsWith("✗")) ? MessageBoxImage.Warning : MessageBoxImage.Information);
+        }
+
+        private async void BtnAddLink_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new LinkDialog { Owner = this };
+            if (dialog.ShowDialog() != true) return;
+            string link = dialog.Link;
+
+            var config = CurrentConfigWithEdits();
+            var existing = config.Sources.FirstOrDefault(s => string.Equals(s.Url?.Trim(), link, StringComparison.OrdinalIgnoreCase));
+            SourceUpdateResult result;
+            try
+            {
+                SetBusy(true, "Downloading the list…");
+                result = await SourceDownloader.UpdateAsync(link, existing?.Path, existing != null ? CurrentItemCount(existing.Path) : 0);
+                if (result.Updated)
+                {
+                    existing ??= config.Sources.FirstOrDefault(s => string.Equals(s.Path, result.Path, StringComparison.OrdinalIgnoreCase));
+                    if (existing == null)
+                    {
+                        existing = new CatalogSourceConfig
+                        {
+                            Path = result.Path!,
+                            Priority = SourcesConfigStore.GuessPriority(result.FileName)
+                        };
+                        config.Sources.Add(existing);
+                    }
+                    existing.Enabled = true;
+                    existing.Url = link;
+                    existing.UpdatedUtc = DateTime.UtcNow;
+
+                    SetBusy(true, "Reloading the item catalog…");
+                    await ItemDatabase.LoadFromConfigAsync(config);
+                }
+            }
+            finally
+            {
+                SetBusy(false);
+            }
+            await RefreshAsync();
+
+            if (result.Updated)
+                MessageBox.Show($"{result.FileName}: {result.Message}\n\nThe list is now used by the catalog. " +
+                                "Update from links downloads it again later.",
+                                "Add from link", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show($"The list was not added: {result.Message}", "Add from link",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void BtnExportJson_Click(object sender, RoutedEventArgs e)
@@ -200,6 +319,8 @@ namespace DDV_SaveEditor_G
         public string Path { get; set; } = "";
         public string File { get; set; } = "";
         public string FileName { get; set; } = "";
+        public string? Url { get; set; }
+        public string Updated { get; set; } = "";
         public bool Enabled { get; set; }
         public int Priority { get; set; }
         public string Format { get; set; } = "";
