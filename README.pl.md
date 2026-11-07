@@ -57,6 +57,17 @@ razem z narzędziami. Otwórz zakładkę **Tools & Accessories**, znajdź przedm
 
 ![Narzędzia i akcesoria](docs/img/screen-tools.png)
 
+## Presety dekoracji
+
+Gotowe zestawy dekoracji od Gameloftu (np. „Knight Castle Preset” albo „Haunted Mansion Wall
+Preset”) są w zakładce **Presets**. Wybierz jeden i kliknij **Add item** - po zapisaniu pojawi się
+w grze w menu presetów.
+
+Większość presetów pochodzi ze sklepu. Te, które listy opisują jako „unreleased”, są na początku
+ukryte: odznacz **Hide risky or unfinished items**, żeby je zobaczyć.
+
+![Presety dekoracji](docs/img/screen-presets.png)
+
 ## Co znaczą oznaczenia
 
 Każdy przedmiot na liście ma oznaczenie w kolumnie **Safety**:

@@ -69,6 +69,7 @@ namespace DDV_SaveEditor_G.Modules
             ["Cookbook"] = "Cooking recipes",
             ["UnlockedCraftingRecipes"] = "Crafting recipes",
             ["CollectionSets"] = "Collection progress",
+            ["PremadeDecorationPresets"] = "Decoration presets",
             ["MemoryShards"] = "Memories"
         };
 

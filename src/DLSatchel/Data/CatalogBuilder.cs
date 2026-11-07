@@ -836,6 +836,16 @@ namespace DDV_SaveEditor_G.Data
                 string dlc = Get(source, CatalogField.Dlc);
                 string image = Get(source, CatalogField.Image);
 
+                // Rubyelf lists Gameloft decoration presets with an empty Name and the
+                // preset's name in Notes ("Haunted Mansion Wall Preset"); a few rows also miss
+                // the "Preset" category, so the presets' own ID range (20505xxxxx) settles it.
+                bool presetId = source.Id is >= 2050500000 and < 2050600000;
+                if (category.Length == 0 && presetId && type.Length == 0 && notes.Length > 0)
+                    category = "Preset";
+                if (display.Length == 0 && notes.Length > 0 &&
+                    string.Equals(category, "Preset", StringComparison.OrdinalIgnoreCase))
+                    display = notes;
+
                 bool typeInferred = source.Provenance.TryGetValue(CatalogField.Type, out var typeRef) &&
                                     typeRef.File == "(learned)";
                 string prefix = _taxonomy.GetNamePrefix(name);

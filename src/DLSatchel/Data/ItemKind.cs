@@ -24,7 +24,8 @@ namespace DDV_SaveEditor_G.Data
         MountGear,
         BoardGame,
         PhotoMode,
-        AvatarFeature
+        AvatarFeature,
+        DecorationPreset
     }
 
     /// <summary>How risky it is to hand this item to the game.</summary>
@@ -46,6 +47,7 @@ namespace DDV_SaveEditor_G.Data
         Collection,
         Pet,
         Tool,
-        Currency
+        Currency,
+        DecorationPreset
     }
 }

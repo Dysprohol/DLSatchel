@@ -5,7 +5,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>DDV_SaveEditor_G</RootNamespace>
     <ApplicationIcon>Assets\Icons\DLSatchel.ico</ApplicationIcon>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Product>DL Satchel</Product>
     <AssemblyTitle>DL Satchel - save editor</AssemblyTitle>
     <Authors>Dysprohol</Authors>

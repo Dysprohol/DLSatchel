@@ -116,6 +116,7 @@
     "Environment": "Unknown"
   },
   "kindByCategory": {
+    "Preset": "DecorationPreset",
     "Furniture": "Furniture",
     "Furniture Story": "Furniture",
     "Misc Decoration": "Furniture",
@@ -220,6 +221,7 @@
     "BoardGame": "Storage",
     "AvatarFeature": "Storage",
     "PhotoMode": "Storage",
+    "DecorationPreset": "DecorationPreset",
     "Unknown": "None"
   },
   "nonInventoryTypes": [
@@ -272,6 +274,7 @@
       "state": "Unsafe",
       "matchAny": [
         "NOTHING",
+        "PLACEHOLDER",
         "DEBUG",
         "DONT USE",
         "DON'T USE",

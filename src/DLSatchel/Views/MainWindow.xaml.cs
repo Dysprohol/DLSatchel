@@ -152,6 +152,7 @@ namespace DDV_SaveEditor_G
                 PopulatePets();
                 PopulateMounts();
                 PopulateTools();
+                PopulatePresets();
                 foreach (var tbl in storageTables.Values)
                     foreach (DataRow row in tbl.Rows)
                         if (row.RowState != DataRowState.Deleted) ListInventoryModule.FillNames(row);
@@ -240,6 +241,7 @@ namespace DDV_SaveEditor_G
             PopulatePets();
             PopulateMounts();
             PopulateTools();
+            PopulatePresets();
             PopulateStorage();
             UpdateCollectionHelpText();
             UpdateInventorySlotsComboBox();
@@ -475,6 +477,7 @@ namespace DDV_SaveEditor_G
             AddOwnedArray(ids, player["Pets"] as JArray, "PetItemID");
             AddOwnedArray(ids, player["Mounts"] as JArray, "MountItemID");
             AddOwnedArray(ids, player["Tools"] as JArray, "ToolItemID");
+            AddOwnedArray(ids, player["PremadeDecorationPresets"]?["DecorationPresets"] as JArray, "PresetID");
             AddOwnedArray(ids, player["Cookbook"]?["Recipes"] as JArray, "RecipeID");
             AddOwnedArray(ids, player["UnlockedCraftingRecipes"] as JArray, "RecipeID");
             if (player["CurrencyAmounts"] is JObject currencies)
@@ -564,6 +567,7 @@ namespace DDV_SaveEditor_G
             "Mounts" => "[KIND] = 'Companion' AND [SUBTYPE] = 'Mount'",
             // Tools and held accessories share Player.Tools; upgrades are not tools.
             "Tools" => "[KIND] = 'Tool' AND [PLACEMENT] = 'Tool' AND ([TYPE] = 'Tool' OR [CATEGORY] = 'Accessory')",
+            "Presets" => "[KIND] = 'DecorationPreset'",
 
             // Use the catalog's resolved category so rows inferred from a source
             // category are still shown with their CAUTION metadata.
@@ -633,6 +637,7 @@ namespace DDV_SaveEditor_G
                 case "Pets":
                 case "Mounts":
                 case "Tools":
+                case "Presets":
                 case "Clothes":
                 case "Backpack":
                     // The tab's catalog scope is based on the resolved save kind;
@@ -650,7 +655,7 @@ namespace DDV_SaveEditor_G
             bool readOnlyTab = CurrentTab == "Mounts" || (IsCurrentStorageTab &&
                 (!TryGetCurrentStorageInfo(out var storageInfo) || !ListInventoryModule.IsEditableType(storageInfo.ItemType)));
             AddItemButton.IsEnabled = !readOnlyTab;
-            RemoveSelectedButton.IsEnabled = !readOnlyTab && CurrentTab != "Tools";
+            RemoveSelectedButton.IsEnabled = !readOnlyTab && CurrentTab is not ("Tools" or "Presets");
             UpdateCollectionHelpText();
         }
 
@@ -668,6 +673,7 @@ namespace DDV_SaveEditor_G
                 "Pets" => "Companions: pets and critters are stored in the companion collection. New entries may show a save-format warning.",
                 "Mounts" => "Mounts are progression records. This section is read-only until their save format is verified.",
                 "Tools" => "Tools & accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
+                "Presets" => "Presets: Gameloft's ready-made decoration sets. An added preset shows up in the game's preset menu; removing is not supported.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
                 _ when TryGetCurrentStorageItemType(out var itemType) && !storageInfos.ContainsKey(itemType) =>
                     $"{DisplayInventoryType(itemType)} is not present in this save.",
@@ -1040,6 +1046,23 @@ namespace DDV_SaveEditor_G
             int accessories = table.AsEnumerable().Count(r => r.Field<string>("Kind") == "Accessory");
             ToolsStatusText.Text = $"Tools and accessories: {table.Rows.Count} ({accessories} accessories). " +
                                    "Find an umbrella or parasol in the catalog and click Add item; it is added unequipped.";
+        }
+
+        private void PopulatePresets()
+        {
+            if (jsonData == null)
+            {
+                PresetsDataGrid.ItemsSource = null;
+                PresetsStatusText.Text = "Load a save to see your decoration presets.";
+                return;
+            }
+
+            var table = PresetModule.MapPresets(jsonData);
+            PresetsDataGrid.ItemsSource = table.DefaultView;
+            PresetsStatusText.Text = ItemPlacement.PresetList(jsonData) == null
+                ? "This save has no preset list, so presets cannot be added."
+                : $"Unlocked presets: {table.Rows.Count}. Find a preset in the catalog and click Add item. " +
+                  "Most are shop items; unreleased ones are hidden unless you untick \"Hide risky or unfinished items\".";
         }
 
         private void UpdateCurrentPetText()
@@ -1436,6 +1459,11 @@ namespace DDV_SaveEditor_G
                     if (!added) extra = " — already in the save";
                     break;
 
+                case PlacementKind.DecorationPreset:
+                    added = ItemPlacement.AddPreset(jsonData, id);
+                    if (!added) extra = " — already unlocked";
+                    break;
+
                 default:
                     added = false;
                     break;
@@ -1454,6 +1482,8 @@ namespace DDV_SaveEditor_G
                 PopulateMounts();
             if (placement.Kind == PlacementKind.Tool)
                 PopulateTools();
+            if (placement.Kind == PlacementKind.DecorationPreset)
+                PopulatePresets();
             var itemRow = ItemDatabase.Find(idTxt);
             string safety = ItemDatabase.Get(itemRow, "SAFETY", "");
             string risk = placement.Warning ?? (safety == "CAUTION"
@@ -1488,6 +1518,9 @@ namespace DDV_SaveEditor_G
                     return;
                 case "Tools":
                     MessageBox.Show("Tools and accessories can be added, but not removed: the game links tools to upgrades and to the one in use.", "Read-Only Section");
+                    return;
+                case "Presets":
+                    MessageBox.Show("Presets can be added, but not removed in this version.", "Read-Only Section");
                     return;
                 case "Pets":
                     var pets = PetDataGrid.SelectedItems.Cast<DataRowView>().ToList();

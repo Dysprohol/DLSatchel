@@ -194,6 +194,49 @@ namespace DDV.SaveEditor.Tests
         }
 
         [Fact]
+        public async Task GameloftPresets_AreNamedFromNotesAndUnlockedInPremadeDecorationPresets()
+        {
+            // Rubyelf lists presets with an empty Name, Category "Preset" and the name in Notes.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes,Catalogue Category\n" +
+                "7A3F0BFB,2050500003,PLACEHOLDER,,,\n" +
+                "7A3F0BFF,2050500007,,Preset,Picnic Decor Preset,Quest\n" +
+                "7A3F0C15,2050500029,,Preset,Haunted Mansion Wall Preset,Premium (Unreleased)\n" +
+                "7A3F0C12,2050500026,,,Bad Witches Preset,Premium (Unreleased)\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((rubyelf, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var haunted = catalog.Get(2050500029)!;
+            Assert.Equal("Haunted Mansion Wall Preset", haunted.DisplayName);
+            Assert.Equal(ItemKind.DecorationPreset, haunted.Kind);
+            Assert.Equal(SafetyState.Unsafe, haunted.Safety);          // "Unreleased"
+            Assert.Equal(SafetyState.Unsafe, catalog.Get(2050500003)!.Safety);   // placeholder slot
+            Assert.NotEqual(SafetyState.Unsafe, catalog.Get(2050500007)!.Safety);
+            var witches = catalog.Get(2050500026)!;                     // row without the "Preset" category
+            Assert.Equal(("Bad Witches Preset", ItemKind.DecorationPreset), (witches.DisplayName, witches.Kind));
+
+            var save = JObject.Parse("""
+            { "Player": { "PremadeDecorationPresets": { "DecorationPresets": [2050500007], "Favorites": [2050500007] } } }
+            """);
+            Assert.Equal(PlacementKind.DecorationPreset, ItemPlacement.Resolve(save, "2050500029").Kind);
+            Assert.True(ItemPlacement.AddPreset(save, 2050500029));
+            Assert.False(ItemPlacement.AddPreset(save, 2050500007));   // already unlocked
+            Assert.Equal(new long[] { 2050500007, 2050500029 },
+                save["Player"]!["PremadeDecorationPresets"]!["DecorationPresets"]!.Select(t => (long)t).ToArray());
+
+            var rows = PresetModule.MapPresets(save).AsEnumerable()
+                .ToDictionary(r => r.Field<long>("Preset ID"), r => (Name: r.Field<string>("Name"), Favorite: r.Field<string>("Favorite")));
+            Assert.Equal(("Picnic Decor Preset", "Yes"), rows[2050500007]);
+            Assert.Equal(("Haunted Mansion Wall Preset", "No"), rows[2050500029]);
+
+            var noList = JObject.Parse("""{ "Player": { } }""");
+            Assert.Equal(PlacementKind.Unsupported, ItemPlacement.Resolve(noList, "2050500029").Kind);
+            Assert.Equal("Decoration presets",
+                SaveDiffModule.Describe(save, "$.Player.PremadeDecorationPresets.DecorationPresets"));
+        }
+
+        [Fact]
         public async Task HeldAccessories_GoToToolsUnequipped_EvenWithoutAType()
         {
             // Parasols and umbrellas are not clothing: the game keeps them in Player.Tools.

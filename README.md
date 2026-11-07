@@ -57,6 +57,17 @@ them together with your tools. Open the **Tools & Accessories** tab, find the it
 
 ![Tools and accessories](docs/img/screen-tools.png)
 
+## Decoration presets
+
+Gameloft's ready-made decoration sets (for example "Knight Castle Preset" or "Haunted Mansion Wall
+Preset") are on the **Presets** tab. Pick one and click **Add item** - after saving, it shows up in
+the game's preset menu.
+
+Most presets come from the shop. The ones the lists call "unreleased" are hidden at first: untick
+**Hide risky or unfinished items** to see them.
+
+![Decoration presets](docs/img/screen-presets.png)
+
 ## What the labels mean
 
 Every item in the list has a label in the **Safety** column:

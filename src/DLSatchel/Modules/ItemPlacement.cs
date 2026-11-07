@@ -16,6 +16,7 @@ namespace DDV_SaveEditor_G.Modules
         Tool,            // Player.Tools[] – { ToolItemID, CurrentOfType }
         CookingRecipe,   // Player.Cookbook.Recipes[] – ID przepisu
         CraftingRecipe,  // Player.UnlockedCraftingRecipes[] – ID przepisu
+        DecorationPreset, // Player.PremadeDecorationPresets.DecorationPresets[] – ID gotowego presetu
         Unsupported
     }
 
@@ -68,6 +69,13 @@ namespace DDV_SaveEditor_G.Modules
             // them a TYPE; tool upgrades stay excluded.
             if (type.Length == 0 && ItemDatabase.Get(row, "CATEGORY", "") == "Accessory")
                 type = "Tool";
+
+            // Gameloft's ready-made decoration presets: the game lists the unlocked ones by ID.
+            // The player's own layouts (World.DecorationPresets) are a different structure.
+            if (ItemDatabase.Get(row, "KIND", "") == nameof(Data.ItemKind.DecorationPreset))
+                return PresetList(root) != null
+                    ? new Placement { Kind = PlacementKind.DecorationPreset, Label = "Presets" }
+                    : Unsupported("This save has no Player.PremadeDecorationPresets list, so a preset cannot be added safely.");
 
             switch (type)
             {
@@ -257,6 +265,19 @@ namespace DDV_SaveEditor_G.Modules
             if (tools.OfType<JObject>().Any(t => t["ToolItemID"]?.ToObject<long>() == id)) return false;
 
             tools.Add(new JObject { ["ToolItemID"] = id, ["CurrentOfType"] = false });
+            return true;
+        }
+
+        internal static JArray? PresetList(JObject root)
+            => root["Player"]?["PremadeDecorationPresets"]?["DecorationPresets"] as JArray;
+
+        /// <summary>Unlocks a Gameloft decoration preset. False when already unlocked or the list is missing.</summary>
+        public static bool AddPreset(JObject root, long id)
+        {
+            if (PresetList(root) is not JArray presets) return false;
+            if (presets.Any(p => p.Type == JTokenType.Integer && (long)p == id)) return false;
+
+            presets.Add(id);
             return true;
         }
 
