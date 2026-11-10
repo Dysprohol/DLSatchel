@@ -1,9 +1,8 @@
 <h1 align="center">DL Satchel</h1>
 
 <p align="center">
-<b>A simple save editor.</b><br>
-Add items, clothes, furniture, companions and coins to your save on PC.<br>
-<a href="README.pl.md">Polska wersja</a>
+<b>A simple save editor for Disney Dreamlight Valley.</b><br>
+Add items, clothes, furniture, companions and coins to your save on PC.
 </p>
 
 ![The editor with a save open](docs/img/screen-overview.png?v=1.3.1)
@@ -14,7 +13,7 @@ lists. You pick what you want, click **Save Changes**, start the game - and it i
 You don't need to know anything about files. The save is encrypted by the game; the editor
 handles that by itself. Before every save it makes a backup, so you can always go back.
 
-> Fan-made and unofficial. PC version only. Changing a save is at your own risk.
+> Fan-made and unofficial. Not affiliated with Gameloft or Disney. PC version only. Changing a save is at your own risk.
 
 ## What you need
 
@@ -116,17 +115,15 @@ To go back: close the game and rename the copy you want to `profile.json`. The s
 
 Did it save you some grinding? [Buy me a coffee on Ko-fi](https://ko-fi.com/Dysprohol).
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
 <details>
 <summary>For developers</summary>
 
 .NET 10 WPF. `src/DLSatchel` is the app, `tests/DLSatchel.Tests` the tests.
 
-```
+```bash
 dotnet build DLSatchel.sln
 dotnet test tests/DLSatchel.Tests
-```
-
-Publish `src/DLSatchel` with the `FolderProfile` profile to get the single `.exe` in
-`output\`. Some tests need both Excel files in a `pliki_testowe` folder next to the solution.
-
-</details>
