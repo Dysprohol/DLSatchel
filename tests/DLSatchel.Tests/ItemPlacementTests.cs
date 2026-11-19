@@ -1,0 +1,364 @@
+﻿using System.Data;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DDV.SaveEditor.Tests.TestData;
+using DDV_SaveEditor_G.Data;
+using DDV_SaveEditor_G.Modules;
+using Newtonsoft.Json.Linq;
+using Xunit;
+
+namespace DDV.SaveEditor.Tests
+{
+    public class ItemPlacementTests
+    {
+        [Fact]
+        public async Task EveryListInventoryTypeUsesTheKeyDeclaredByTheSave()
+        {
+            var types = new[]
+            {
+                "Furniture", "Clothing", "Makeup", "Trimming", "Building",
+                "TouchOfMagic", "Skin", "BoardGame", "AvatarFeature", "PhotoMode", "MountGear"
+            };
+            var csv = new StringBuilder("ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n");
+            for (int i = 0; i < types.Length; i++)
+                csv.AppendLine($"{41000000 + i},Default/Test{i},Test {i},{types[i]}");
+
+            string directory = XlsxBuilder.NewTempDirectory();
+            string source = XlsxBuilder.WriteCsv(Path.Combine(directory, "items.csv"), csv.ToString());
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 10));
+            ItemDatabase.SetCatalog(catalog);
+
+            var inventories = new JObject();
+            for (int i = 0; i < types.Length; i++)
+                inventories[i.ToString()] = new JObject
+                {
+                    ["CompatibleItemType"] = $"ItemType_{types[i]}",
+                    ["Inventory"] = new JObject()
+                };
+            var save = new JObject { ["Player"] = new JObject { ["ListInventories"] = inventories } };
+
+            for (int i = 0; i < types.Length; i++)
+            {
+                var placement = ItemPlacement.Resolve(save, (41000000 + i).ToString());
+                Assert.Equal(PlacementKind.ListInventory, placement.Kind);
+                Assert.Equal(i.ToString(), placement.ListKey);
+                Assert.Null(placement.Problem);
+            }
+
+            Assert.Equal(PlacementHint.Storage, catalog.Get(41000008)!.Placement);
+        }
+
+        [Fact]
+        public async Task UnsupportedKnownTypesAreMarkedUnknownAndNotRoutedIntoInventory()
+        {
+            string directory = XlsxBuilder.NewTempDirectory();
+            string source = XlsxBuilder.WriteCsv(
+                Path.Combine(directory, "items.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                "42000001,MemoryShard/Memory01,Memory shard,MemoryShard\n" +
+                "42000002,Upgrade/Tool01,Tool upgrade,Upgrade\n" +
+                "42000004,MiningData/Mining01,Mining data,ActivityData\n" +
+                "42000005,Character/Mickey,Character,Character\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 10));
+            ItemDatabase.SetCatalog(catalog);
+
+            var save = JObject.Parse("""
+            {
+              "Player": { "ListInventories": {} }
+            }
+            """);
+
+            foreach (long id in new[] { 42000001L, 42000002L, 42000004L, 42000005L })
+            {
+                Assert.Equal(id == 42000005L ? SafetyState.Caution : SafetyState.Unknown, catalog.Get(id)!.Safety);
+                Assert.Equal(PlacementKind.Unsupported, ItemPlacement.Resolve(save, id.ToString()).Kind);
+            }
+        }
+
+        [Theory]
+        [InlineData("Mission!Reward", 42000011L)]
+        [InlineData("Event!Reward", 42000012L)]
+        [InlineData("Character/Mickey", 42000013L)]
+        public async Task MissionEventAndCharacterRecordsWarnButKeepAnOverridePath(string name, long id)
+        {
+            string directory = XlsxBuilder.NewTempDirectory();
+            string type = name.StartsWith("Character/", StringComparison.OrdinalIgnoreCase) ? "Character" : "ActivityItem";
+            string source = XlsxBuilder.WriteCsv(Path.Combine(directory, "items.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                $"{id},{name},Progress reward,{type}\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 10));
+            ItemDatabase.SetCatalog(catalog);
+
+            var save = JObject.Parse("""
+            { "Player": { "ContainerInventories": { "0": { "Inventory": [] } } } }
+            """);
+            Assert.Equal(SafetyState.Caution, catalog.Get(id)!.Safety);
+            Assert.NotNull(ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
+            if (type == "ActivityItem")
+            {
+                Assert.Equal(PlacementKind.Backpack, ItemPlacement.Resolve(save, id.ToString()).Kind);
+                Assert.Contains("Mission/Event/Character", ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
+            }
+            else
+            {
+                Assert.Equal(PlacementKind.Unsupported, ItemPlacement.Resolve(save, id.ToString()).Kind);
+                Assert.Contains("Character", ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
+            }
+        }
+
+        [Fact]
+        public async Task MountAdditionUsesMinimalRecordAndProtectsExistingMountData()
+        {
+            string directory = XlsxBuilder.NewTempDirectory();
+            string source = XlsxBuilder.WriteCsv(Path.Combine(directory, "items.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                "42000003,Mount/TestHorse,Test Mount,Companion\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 10));
+            ItemDatabase.SetCatalog(catalog);
+
+            var save = JObject.Parse("""
+            {
+              "Player": {
+                "Mounts": [ { "MountItemID": 42000004, "BondingLevel": 5, "CustomField": "keep" } ],
+                "CollectionSets": [ { "GroupData": [ { "GroupsCollectionItems": { "42000003": false } } ] } ],
+                "ContainerInventories": { "0": { "Inventory": [] }, "9": { "CharacterData": true } }
+              }
+            }
+            """);
+
+            Placement placement = ItemPlacement.Resolve(save, "42000003");
+            Assert.Equal(PlacementKind.Mount, placement.Kind);
+            Assert.Contains("EXPERIMENTAL", placement.Warning);
+            Assert.True(MountModule.AddMount(save, 42000003));
+            Assert.False(MountModule.AddMount(save, 42000003));
+            Assert.Equal(42000003, save["Player"]?["Mounts"]?[1]?["MountItemID"]?.Value<long>());
+            Assert.Single((JObject)save["Player"]!["Mounts"]![1]!);
+            Assert.Equal(5, save["Player"]?["Mounts"]?[0]?["BondingLevel"]?.Value<int>());
+            Assert.Equal("keep", save["Player"]?["Mounts"]?[0]?["CustomField"]?.Value<string>());
+            Assert.Equal(1, ItemPlacement.MarkCollected(save, 42000003));
+            Assert.True(save["Player"]?["CollectionSets"]?[0]?["GroupData"]?[0]?["GroupsCollectionItems"]?["42000003"]?.Value<bool>());
+            Assert.True((bool)save["Player"]?["ContainerInventories"]?["9"]?["CharacterData"]!);
+
+            var issues = SaveValidationModule.Analyze(save);
+            Assert.Contains(issues, issue => issue.Level == SaveIssueLevel.Caution && issue.Message.Contains("only MountItemID"));
+        }
+
+        [Fact]
+        public async Task PlumeriaFlowerPath_GoesToFurnitureGroundAlterationInventory()
+        {
+            string directory = XlsxBuilder.NewTempDirectory();
+            string source = XlsxBuilder.WriteCsv(
+                Path.Combine(directory, "items.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE,CATEGORY\n" +
+                "40200507,Landscaping/Plant!MoanaPlumeriaFlowerPath01,Plumeria Flower Path,Furniture,Landscaping Path\n");
+
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 10));
+            ItemDatabase.SetCatalog(catalog);
+            Assert.Equal("Caution", catalog.Get(40200507)!.Safety.ToString());
+
+            var save = JObject.Parse("""
+            {
+              "Player": {
+                "ContainerInventories": {
+                  "0": { "Size": 21, "Inventory": [] }
+                },
+                "ListInventories": {
+                  "0": {
+                    "CompatibleItemType": "ItemType_Furniture",
+                    "CompatibleFurnitureTypes": {
+                      "List": ["FurnitureItemType_GroundAlteration"]
+                    },
+                    "Inventory": {}
+                  }
+                }
+              }
+            }
+            """);
+
+            Placement placement = ItemPlacement.Resolve(save, "40200507");
+
+            Assert.Equal(PlacementKind.ListInventory, placement.Kind);
+            Assert.Equal("0", placement.ListKey);
+            Assert.Null(placement.Problem);
+            Assert.Contains("not yet been confirmed", placement.Warning);
+
+            var furniture = ListInventoryModule.Map(save, placement.ListKey!);
+            furniture.Rows.Add(40200507L, "?", "?", 1, "?");
+            ListInventoryModule.Save(save, placement.ListKey!, furniture);
+
+            Assert.Equal(1, save["Player"]?["ListInventories"]?["0"]?["Inventory"]?["40200507"]?["Amount"]?.Value<int>());
+            Assert.Equal("ItemMarker_None", save["Player"]?["ListInventories"]?["0"]?["Inventory"]?["40200507"]?["Marker"]?.Value<string>());
+            Assert.Empty((JArray)save["Player"]!["ContainerInventories"]!["0"]!["Inventory"]!);
+        }
+
+        [Fact]
+        public async Task GameloftPresets_AreNamedFromNotesAndUnlockedInPremadeDecorationPresets()
+        {
+            // Rubyelf lists presets with an empty Name, Category "Preset" and the name in Notes.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes,Catalogue Category\n" +
+                "7A3F0BFB,2050500003,PLACEHOLDER,,,\n" +
+                "7A3F0BFF,2050500007,,Preset,Picnic Decor Preset,Quest\n" +
+                "7A3F0C15,2050500029,,Preset,Haunted Mansion Wall Preset,Premium (Unreleased)\n" +
+                "7A3F0C12,2050500026,,,Bad Witches Preset,Premium (Unreleased)\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((rubyelf, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var haunted = catalog.Get(2050500029)!;
+            Assert.Equal("Haunted Mansion Wall Preset", haunted.DisplayName);
+            Assert.Equal(ItemKind.DecorationPreset, haunted.Kind);
+            Assert.Equal(SafetyState.Unsafe, haunted.Safety);          // "Unreleased"
+            Assert.Equal(SafetyState.Unsafe, catalog.Get(2050500003)!.Safety);   // placeholder slot
+            Assert.NotEqual(SafetyState.Unsafe, catalog.Get(2050500007)!.Safety);
+            var witches = catalog.Get(2050500026)!;                     // row without the "Preset" category
+            Assert.Equal(("Bad Witches Preset", ItemKind.DecorationPreset), (witches.DisplayName, witches.Kind));
+
+            var save = JObject.Parse("""
+            { "Player": { "PremadeDecorationPresets": { "DecorationPresets": [2050500007], "Favorites": [2050500007] } } }
+            """);
+            Assert.Equal(PlacementKind.DecorationPreset, ItemPlacement.Resolve(save, "2050500029").Kind);
+            Assert.True(ItemPlacement.AddPreset(save, 2050500029));
+            Assert.False(ItemPlacement.AddPreset(save, 2050500007));   // already unlocked
+            Assert.Equal(new long[] { 2050500007, 2050500029 },
+                save["Player"]!["PremadeDecorationPresets"]!["DecorationPresets"]!.Select(t => (long)t).ToArray());
+
+            var rows = PresetModule.MapPresets(save).AsEnumerable()
+                .ToDictionary(r => r.Field<long>("Preset ID"), r => (Name: r.Field<string>("Name"), Favorite: r.Field<string>("Favorite")));
+            Assert.Equal(("Picnic Decor Preset", "Yes"), rows[2050500007]);
+            Assert.Equal(("Haunted Mansion Wall Preset", "No"), rows[2050500029]);
+
+            var noList = JObject.Parse("""{ "Player": { } }""");
+            Assert.Equal(PlacementKind.Unsupported, ItemPlacement.Resolve(noList, "2050500029").Kind);
+            Assert.Equal("Decoration presets",
+                SaveDiffModule.Describe(save, "$.Player.PremadeDecorationPresets.DecorationPresets"));
+        }
+
+        [Fact]
+        public async Task GameloftPresets_FromTheNewerKosddvDump_StayPresets()
+        {
+            // Newer KOSDDV dumps list presets as ActivityData, which otherwise means "not an item".
+            // The dump wins over Rubyelf, so its TYPE must not hide the presets.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string dump = XlsxBuilder.WriteCsv(Path.Combine(directory, "dump.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE,SUBTYPE,ONLINE_TAG\n" +
+                "2050500016,PremadeDecorationPreset/PremadeKnightCastleBundle,Knight Castle Preset,ActivityData,True,Premium\n" +
+                "2050100001,CookingRecipe/Salad,Salad,ActivityData,,\n");
+            string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes,Catalogue Category\n" +
+                "7A3F0C08,2050500016,,Preset,Knight Castle Preset,Premium\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((dump, 10), (rubyelf, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var knight = catalog.Get(2050500016)!;
+            Assert.Equal(("Knight Castle Preset", ItemKind.DecorationPreset, PlacementHint.DecorationPreset),
+                         (knight.DisplayName, knight.Kind, knight.Placement));
+            Assert.Equal(ItemKind.Recipe, catalog.Get(2050100001)!.Kind);   // other ActivityData unchanged
+
+            var save = JObject.Parse("""{ "Player": { "PremadeDecorationPresets": { "DecorationPresets": [] } } }""");
+            Assert.Equal(PlacementKind.DecorationPreset, ItemPlacement.Resolve(save, "2050500016").Kind);
+        }
+
+        [Fact]
+        public async Task HeldAccessories_GoToToolsUnequipped_EvenWithoutAType()
+        {
+            // Parasols and umbrellas are not clothing: the game keeps them in Player.Tools.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string dump = XlsxBuilder.WriteCsv(Path.Combine(directory, "dump.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                "110800024,Accessory/UmbrellaWitchesAccessory01,Witchy Parasol,Tool\n" +
+                "110000002,Gardening/Shovel02,Better Shovel,Tool\n");
+            string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes\n" +
+                "69B9C5C,110800099,New Parasol,Accessory,\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((dump, 10), (rubyelf, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var save = JObject.Parse("""
+            { "Player": { "Tools": [ { "ToolItemID": 110000002, "CurrentOfType": true } ],
+                          "ListInventories": { "1": { "CompatibleItemType": "ItemType_Clothing", "Inventory": {} } } } }
+            """);
+
+            foreach (long id in new[] { 110800024L, 110800099L })
+            {
+                var placement = ItemPlacement.Resolve(save, id.ToString());
+                Assert.Equal(PlacementKind.Tool, placement.Kind);
+                Assert.True(ItemPlacement.AddTool(save, id));
+            }
+            Assert.False(ItemPlacement.AddTool(save, 110800024));   // already there
+            Assert.Empty((JObject)save["Player"]!["ListInventories"]!["1"]!["Inventory"]!);
+
+            var tools = ToolModule.MapTools(save).AsEnumerable()
+                .ToDictionary(r => r.Field<long>("Item ID"), r => (Kind: r.Field<string>("Kind"), InUse: r.Field<string>("In use")));
+            Assert.Equal(("Tool", "Yes"), tools[110000002]);
+            Assert.Equal(("Accessory", "No"), tools[110800024]);
+            Assert.Equal(("Accessory", "No"), tools[110800099]);
+        }
+
+        [Fact]
+        public async Task RubyelfStyleCatalogFillsCategoryWithoutTypeColumn()
+        {
+            // Rubyelf has only a display Name and a human Category: no internal NAME, no TYPE.
+            string directory = XlsxBuilder.NewTempDirectory();
+            string source = XlsxBuilder.WriteCsv(
+                Path.Combine(directory, "rubyelf.csv"),
+                "Hex,Item ID,Name,Category,Notes\n" +
+                "2625A00,40000000,Wooden Chair,Furniture,\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 30));
+            ItemDatabase.SetCatalog(catalog);
+
+            var save = JObject.Parse("""
+            {
+              "Player": {
+                "ListInventories": {
+                  "0": {
+                    "CompatibleItemType": "ItemType_Furniture",
+                    "Inventory": {
+                      "40000000": { "Amount": 1, "Marker": "ItemMarker_None" },
+                      "40009999": { "Amount": 2, "Marker": "ItemMarker_None" }
+                    }
+                  }
+                }
+              }
+            }
+            """);
+
+            var table = ListInventoryModule.Map(save, "0");
+            var known = table.AsEnumerable().Single(r => r.Field<long>("Item ID") == 40000000);
+            var missing = table.AsEnumerable().Single(r => r.Field<long>("Item ID") == 40009999);
+
+            Assert.Equal("Wooden Chair", known["Localized Name"]);
+            Assert.Equal("—", known["Name"]);
+            Assert.Equal("Furniture", known["Category"]);
+            Assert.Equal("?", missing["Name"]);
+            Assert.Equal("(not in catalog)", missing["Localized Name"]);
+            Assert.Equal("Furniture", missing["Category"]);
+        }
+
+        [Fact]
+        public async Task PixelDustIsEditableAndMarkedWithCaution()
+        {
+            string directory = XlsxBuilder.NewTempDirectory();
+            string source = XlsxBuilder.WriteCsv(
+                Path.Combine(directory, "items.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                "80200002,Currency/PixelDust,Pixel Dust,Currency\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((source, 10));
+            ItemDatabase.SetCatalog(catalog);
+            Assert.Equal(SafetyState.Caution, catalog.Get(80200002)!.Safety);
+            var save = JObject.Parse("""
+            { "Player": { "CurrencyAmounts": { "80200002": 17 } } }
+            """);
+
+            var placement = ItemPlacement.Resolve(save, "80200002");
+            Assert.Equal(PlacementKind.Currency, placement.Kind);
+            Assert.Equal(117, ItemPlacement.AddCurrency(save, 80200002, 100));
+            Assert.Equal(117, save["Player"]?["CurrencyAmounts"]?["80200002"]?.Value<int>());
+
+            PlayerModule.SavePlayerData(save, new Dictionary<string, string> { ["PixelDust"] = "999999" });
+            Assert.Equal(999999, save["Player"]?["CurrencyAmounts"]?["80200002"]?.Value<int>());
+        }
+    }
+}
