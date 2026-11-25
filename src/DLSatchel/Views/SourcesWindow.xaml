@@ -112,7 +112,7 @@
                            RequestNavigate="Link_RequestNavigate" Foreground="{StaticResource DreamlightGold}">Rubyelf's ID list</Hyperlink><Run Text=". If a link stops working, the"/>
                 <Hyperlink NavigateUri="https://fearlessrevolution.com/viewtopic.php?f=2&amp;t=21330"
                            RequestNavigate="Link_RequestNavigate" Foreground="{StaticResource DreamlightGold}">forum thread</Hyperlink>
-                <Run Text="has the news; paste a new link in the Link column, or add the Excel file with Add Excel."/>
+                <Run Text="has the news; paste a new link in the Link column, or add the Excel file with Add Excel. The dump is read from the game files and has everything, unchecked items too; Rubyelf's list is checked and described by players."/>
             </TextBlock>
         </DockPanel>
     </Grid>

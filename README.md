@@ -12,7 +12,7 @@ Add items, clothes, furniture, companions and coins to your save on PC.
 <a href="https://ko-fi.com/Dysprohol"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white"></a>
 </p>
 
-![The editor with a save open](docs/img/screen-overview.png?v=1.5.1)
+![The editor with a save open](docs/img/screen-overview.png?v=1.5.2)
 
 Your whole game is kept in one file on your PC. DL Satchel opens that file and shows it as simple
 lists. You pick what you want, click **Save Changes**, start the game - and it is there.
@@ -28,8 +28,10 @@ handles that by itself. Before every save it makes a backup, so you can always g
    [Releases](https://github.com/Dysprohol/DLSatchel/releases). It is one file, nothing to install.
 2. **Two item lists** - the editor does **not** work without them. Players on the FearLess
    Revolution forum keep them up to date, and the editor downloads them for you:
-   - [KOSDDV item dump](https://docs.google.com/spreadsheets/d/1uxiBlhMhTtuo7xMd5gGsj7H7GyowfOlJqfA-R_i5jjM/edit)
-   - [Rubyelf's ID list](https://docs.google.com/spreadsheets/d/1bBrfqq6m9qqZDXFVtqf646xD5LvLM2W1q1YTH0YVoZo/edit)
+   - [KOSDDV item dump](https://docs.google.com/spreadsheets/d/1uxiBlhMhTtuo7xMd5gGsj7H7GyowfOlJqfA-R_i5jjM/edit) -
+     read from the game files: every item, including unfinished and developer ones nobody has checked.
+   - [Rubyelf's ID list](https://docs.google.com/spreadsheets/d/1bBrfqq6m9qqZDXFVtqf646xD5LvLM2W1q1YTH0YVoZo/edit) -
+     checked and described by players. Items only in the dump are shown as "not checked by the community".
 
    New items and questions: [the forum thread](https://fearlessrevolution.com/viewtopic.php?f=2&t=21330),
    where the people who make the lists post.
@@ -46,12 +48,12 @@ handles that by itself. Before every save it makes a backup, so you can always g
    To add several at once, select them with **Ctrl** or **Shift** and click **Add item**.
    Companions are added the same way and show up in the game's Companions menu.
 
-   ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.1)
+   ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.2)
 
 6. To remove something, open a collection on the right (for example **Furniture**), select it and
    click **Remove selected**. Coins and level are at the top left.
 
-   ![Your furniture](docs/img/screen-collection.png?v=1.5.1)
+   ![Your furniture](docs/img/screen-collection.png?v=1.5.2)
 
 7. Click **Save Changes**. The editor shows what will change (for example "Backpack") and asks you
    to confirm. Then start the game.
@@ -62,7 +64,7 @@ Things your character holds - umbrellas, parasols and the like - are **not cloth
 them together with your tools. Open the **Tools & Accessories** tab, find the item and click
 **Add item**. It is added unequipped, so you pick it in the game.
 
-![Tools and accessories](docs/img/screen-tools.png?v=1.5.1)
+![Tools and accessories](docs/img/screen-tools.png?v=1.5.2)
 
 ## Decoration presets
 
@@ -75,7 +77,7 @@ pieces you are missing and can add them to your furniture storage in one go.
 Most presets come from the shop. The ones the lists call "unreleased" are hidden at first: untick
 **Hide risky or unfinished items** to see them.
 
-![Decoration presets](docs/img/screen-presets-furniture.png?v=1.5.1)
+![Decoration presets](docs/img/screen-presets-furniture.png?v=1.5.2)
 
 ## Adding everything you're missing
 
@@ -94,7 +96,7 @@ group here, unticked. A player lost that expansion's area after adding such item
 Nothing here is guaranteed. The lists are made by players and can be wrong, especially right after
 a game update. **Back up your save, add a little, check in the game, then add more.**
 
-![Adding everything you're missing](docs/img/screen-add-missing.png?v=1.5.1)
+![Adding everything you're missing](docs/img/screen-add-missing.png?v=1.5.2)
 
 ## Mermaid parts and ships
 

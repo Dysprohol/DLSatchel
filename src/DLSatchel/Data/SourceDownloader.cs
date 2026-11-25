@@ -198,6 +198,14 @@ namespace DDV_SaveEditor_G.Data
                     ? targetPath
                     : System.IO.Path.Combine(ListsDirectory, targetPath != null ? System.IO.Path.GetFileName(targetPath) : label);
                 Directory.CreateDirectory(System.IO.Path.GetDirectoryName(destination)!);
+                if (targetPath == null)
+                {
+                    // A new list whose sheet has the same name as one you have: "Name (2).xlsx", never over it.
+                    string stem = System.IO.Path.GetFileNameWithoutExtension(destination);
+                    string ext = System.IO.Path.GetExtension(destination);
+                    for (int n = 2; File.Exists(destination); n++)
+                        destination = System.IO.Path.Combine(ListsDirectory, $"{stem} ({n}){ext}");
+                }
                 if (File.Exists(destination))
                 {
                     Directory.CreateDirectory(BackupDirectory);

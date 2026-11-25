@@ -33,7 +33,7 @@ namespace DDV_SaveEditor_G
                     IsChecked = MissingItems.CheckedByDefault(g) && missing.Any(m => m.Group == g)
                 })
                 .ToList();
-            GroupList.ItemsSource = _groups;
+            GroupList.ItemsSource = _groups.Where(g => g.HasItems).ToList();   // empty groups are only clutter
             IntroText.Text = $"{collection}: you don't have {missing.Count:N0} of the items your lists know. " +
                              "Choose which kinds to add.";
             UpdateButton();

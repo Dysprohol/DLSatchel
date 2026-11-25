@@ -80,6 +80,21 @@ namespace DDV.SaveEditor.Tests
         }
 
         [Fact]
+        public async Task TwoNewListsWithTheSameSheetName_GetTheirOwnFiles()
+        {
+            using var first = new OneFileServer(Csv(12), fileName: "list.csv");
+            using var second = new OneFileServer(Csv(15), fileName: "list.csv");
+
+            var a = await SourceDownloader.UpdateAsync(first.Url, null, 0);
+            var b = await SourceDownloader.UpdateAsync(second.Url, null, 0);
+
+            Assert.True(a.Updated && b.Updated, a.Message + " / " + b.Message);
+            Assert.NotEqual(a.Path, b.Path);
+            Assert.Equal(Csv(12), File.ReadAllText(a.Path!));   // the first list was not overwritten
+            Assert.Equal(Csv(15), File.ReadAllText(b.Path!));
+        }
+
+        [Fact]
         public async Task GoodDownload_ReplacesACopyInTheEditorsFolder_KeepingTheOldOne()
         {
             Directory.CreateDirectory(SourceDownloader.ListsDirectory);
@@ -261,7 +276,7 @@ namespace DDV.SaveEditor.Tests
             private readonly TcpListener _listener = new(IPAddress.Loopback, 0);
             private readonly CancellationTokenSource _stop = new();
 
-            public OneFileServer(string body, string status = "200 OK")
+            public OneFileServer(string body, string status = "200 OK", string? fileName = null)
             {
                 _listener.Start();
                 byte[] content = Encoding.UTF8.GetBytes(body);
@@ -277,7 +292,8 @@ namespace DDV.SaveEditor.Tests
                             var stream = client.GetStream();
                             var buffer = new byte[4096];
                             await stream.ReadAsync(buffer);
-                            string head = $"HTTP/1.1 {status}\r\nContent-Length: {content.Length}\r\nConnection: close\r\n\r\n";
+                            string disposition = fileName == null ? "" : $"Content-Disposition: attachment; filename=\"{fileName}\"\r\n";
+                            string head = $"HTTP/1.1 {status}\r\nContent-Length: {content.Length}\r\n{disposition}Connection: close\r\n\r\n";
                             await stream.WriteAsync(Encoding.ASCII.GetBytes(head));
                             await stream.WriteAsync(content);
                         }

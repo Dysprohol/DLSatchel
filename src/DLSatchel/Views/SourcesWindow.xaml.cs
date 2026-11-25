@@ -382,8 +382,15 @@ namespace DDV_SaveEditor_G
             };
             if (dlg.ShowDialog() == true)
             {
-                CatalogReport.SaveJson(catalog.Diagnostics, dlg.FileName);
-                MessageBox.Show($"Report saved:\n{dlg.FileName}", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    CatalogReport.SaveJson(catalog.Diagnostics, dlg.FileName);
+                    MessageBox.Show($"Report saved:\n{dlg.FileName}", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    MessageBox.Show($"The report could not be saved: {ex.Message}", "Report", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
         }
 
@@ -400,8 +407,15 @@ namespace DDV_SaveEditor_G
             };
             if (dlg.ShowDialog() == true)
             {
-                CatalogReport.SaveMarkdown(catalog.Diagnostics, dlg.FileName);
-                MessageBox.Show($"Report saved:\n{dlg.FileName}", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    CatalogReport.SaveMarkdown(catalog.Diagnostics, dlg.FileName);
+                    MessageBox.Show($"Report saved:\n{dlg.FileName}", "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    MessageBox.Show($"The report could not be saved: {ex.Message}", "Report", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
         }
 

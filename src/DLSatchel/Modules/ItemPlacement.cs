@@ -125,7 +125,7 @@ namespace DDV_SaveEditor_G.Modules
 
                 case "MemoryShard":
                     // Player.MemoryShards = { ID: maska zebranych kawałków } (wartości 1, 2, 4 … 938) – liczby kawałków nie znamy
-                    return Unsupported("MemoryShards stores collected memory fragments as a bit mask. Editing this format is not supported.");
+                    return Unsupported("Memories can't be added by the editor.");
 
                 case "Character":
                     return Unsupported("This is a character. Characters join your valley through the story; the editor can't add them.");
