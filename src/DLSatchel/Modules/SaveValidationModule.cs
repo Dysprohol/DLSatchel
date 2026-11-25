@@ -49,7 +49,7 @@ namespace DDV_SaveEditor_G.Modules
             {
                 for (int i = 0; i < backpack.Count; i++)
                 {
-                    long id = backpack[i]?["ItemID"]?.Value<long>() ?? 0;
+                    long id = backpack[i] is JObject slot ? ReadId(slot["ItemID"]) : 0;
                     if (id > 0)
                         CheckItem(root, id, PlacementKind.Backpack, null,
                             $"Player.ContainerInventories.0.Inventory[{i}]", issues);
@@ -164,12 +164,14 @@ namespace DDV_SaveEditor_G.Modules
         private static void InspectBackpackSize(JObject player, List<SaveValidationIssue> issues)
         {
             if (player["ContainerInventories"]?["0"] is not JObject container) return;
-            long size = ReadId(container["Size"]) - ReadId(container["ExtraSize"]);
+            // Measured in the game: Size above 42 is set back. What ExtraSize means is not known
+            // (one save has Size 42 with ExtraSize 43), so it is left out of the check.
+            long size = ReadId(container["Size"]);
             const int max = InventoryModule.GameMaxBackpackSlots;
             if (size <= max) return;
 
             int beyond = container["Inventory"] is JArray slots
-                ? slots.Skip(max).Count(slot => ReadId(slot?["ItemID"]) > 0)
+                ? slots.Skip(max).Count(slot => slot is JObject s && ReadId(s["ItemID"]) > 0)
                 : 0;
             string advice = beyond > 0
                 ? $" {beyond} item(s) are beyond slot {max}: move them to the first {max} slots or set the backpack to {max}."

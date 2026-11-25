@@ -187,6 +187,14 @@ namespace DDV_SaveEditor_G.Updates
         }
 
         public static void OpenInBrowser(string url)
-            => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        {
+            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+            {
+                System.Windows.Clipboard.SetText(url);
+                System.Windows.MessageBox.Show($"No web browser could be opened. The link was copied:\n{url}",
+                                               "DL Satchel", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
+        }
     }
 }

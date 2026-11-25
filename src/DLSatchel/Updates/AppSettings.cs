@@ -12,6 +12,9 @@ namespace DDV_SaveEditor_G.Updates
         /// <summary>The player said No to downloading the item lists at first start: don't ask at every start.</summary>
         public bool ListDownloadDeclined { get; set; }
 
+        /// <summary>Ask before adding an item with warnings. Off: the warning only shows in the status line.</summary>
+        public bool AskBeforeAddingWarnedItems { get; set; } = true;
+
         private static string FilePath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "DDVSaveEditor", "settings.json");

@@ -67,6 +67,8 @@ namespace DDV_SaveEditor_G.Modules
                 inventoryTable.Rows.Add(row);
             }
 
+            // As read from the save: only later edits count as changes (the unsaved-edits check uses this).
+            inventoryTable.AcceptChanges();
             return inventoryTable;
         }
 

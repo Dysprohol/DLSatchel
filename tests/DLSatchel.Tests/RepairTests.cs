@@ -73,7 +73,9 @@ namespace DDV.SaveEditor.Tests
             var risky = RiskyAdditions.Find(now, before);
 
             Assert.Equal(new[] { 40000002L, 40000005L }, risky.Select(r => r.Id).OrderBy(i => i));
-            Assert.Equal("game object, not a normal item", risky.Single(r => r.Id == 40000002).Reason);
+            Assert.Equal("game object, may belong to a quest", risky.Single(r => r.Id == 40000002).Reason);
+            // The game hands out quest objects too, so they only come in the cautious question.
+            Assert.True(risky.Single(r => r.Id == 40000002).OnlyUnchecked);
             Assert.Equal("not checked by the community list", risky.Single(r => r.Id == 40000005).Reason);
             Assert.All(risky, r => Assert.Equal("0", r.ListKey));
             Assert.Empty(RiskyAdditions.Find(before, before));

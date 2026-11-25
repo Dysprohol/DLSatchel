@@ -274,15 +274,27 @@ namespace DDV_SaveEditor_G.Modules
             if (row == null) return warnings;
             string name = ItemDatabase.Get(row, "NAME", "");
 
-            var tag = System.Text.RegularExpressions.Regex.Match(name, @"Expansion0\d|WinnieDLC");
-            if (tag.Success && root["LastKnownBoughtExpansionsAnyPlatform"] is JArray owned &&
-                !owned.Any(t => string.Equals(t.ToString(), tag.Value, StringComparison.OrdinalIgnoreCase)))
-                warnings.Add($"From an expansion this save doesn't have ({tag.Value}). A player reported losing that expansion's area after adding such items.");
+            if (MissingExpansion(root, row) is string tag)
+                warnings.Add($"From an expansion not owned where this save was last played ({tag}). A player reported losing that expansion's area after adding such items.");
 
             if (name.StartsWith("Mount/", StringComparison.OrdinalIgnoreCase) && ItemDatabase.Get(row, "TYPE", "") == "Companion" &&
                 root["Player"]?["Mounts"] is JArray { Count: 0 })
                 warnings.Add("No mounts unlocked in this save yet. A player reported a white screen after adding a horse this early.");
             return warnings;
+        }
+
+        /// <summary>
+        /// The expansion an item comes with ("Expansion02", "WinnieDLC") when the save says the platform
+        /// it was last played on doesn't own it. The save's list follows that platform: playing it
+        /// elsewhere changes it, so this is about where the save is played, not who bought what.
+        /// Null when the item needs no expansion, or the save doesn't say (older saves).
+        /// </summary>
+        public static string? MissingExpansion(JObject root, DataRow? row)
+        {
+            if (row == null) return null;
+            var tag = System.Text.RegularExpressions.Regex.Match(ItemDatabase.Get(row, "NAME", ""), @"Expansion0\d|WinnieDLC");
+            if (!tag.Success || root["LastKnownBoughtExpansionsAnyPlatform"] is not JArray owned) return null;
+            return owned.Any(t => string.Equals(t.ToString(), tag.Value, StringComparison.OrdinalIgnoreCase)) ? null : tag.Value;
         }
 
         private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];

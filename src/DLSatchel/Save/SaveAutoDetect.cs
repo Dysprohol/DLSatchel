@@ -39,8 +39,11 @@ namespace DDV_SaveEditor_G
             if (!Directory.Exists(basePath))
                 return list;
 
+            // Steam saves sit in steam_<id>_r; players also move saves into other folders here
+            // (forum: a "Windows" save folder). Any folder with a profile.json counts; Steam ones first.
             var dirs = Directory.GetDirectories(basePath)
-                .Where(d => SteamFolderRegex.IsMatch(Path.GetFileName(d)));
+                .Where(d => File.Exists(Path.Combine(d, "profile.json")))
+                .OrderByDescending(d => SteamFolderRegex.IsMatch(Path.GetFileName(d)));
 
             foreach (var dir in dirs)
             {

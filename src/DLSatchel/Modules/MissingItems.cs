@@ -38,7 +38,7 @@ namespace DDV_SaveEditor_G.Modules
             MissingGroup.Ordinary => "Ordinary items",
             MissingGroup.Shop => "Shop and Premium items",
             MissingGroup.Dlc => "Expansion and DLC items",
-            MissingGroup.NotOwnedExpansion => "From expansions this save doesn't have",
+            MissingGroup.NotOwnedExpansion => "From expansions not owned where this save was last played",
             MissingGroup.Event => "Event and Star Path items",
             MissingGroup.Quest => "Quest rewards",
             MissingGroup.Unlock => "Mermaid parts and ship skins",
@@ -54,7 +54,7 @@ namespace DDV_SaveEditor_G.Modules
             MissingGroup.Ordinary => "Items the lists have no warnings about.",
             MissingGroup.Shop => "Sold in the game's shop or in bundles, including premium Star Path rewards.",
             MissingGroup.Dlc => "From expansions or DLC. Tick them only if you own them.",
-            MissingGroup.NotOwnedExpansion => "Your save doesn't list these expansions as bought. A player reported losing an expansion's area after adding such items.",
+            MissingGroup.NotOwnedExpansion => "The save says the platform it was last played on doesn't own these expansions. A player reported losing an expansion's area after adding such items.",
             MissingGroup.Event => "From events and Star Paths.",
             MissingGroup.Quest => "Given by quests. Players report quests getting stuck when the reward is already there.",
             MissingGroup.Unlock => "Used by the mermaid form or the ship the game unlocks in its story. Adding them before that isn't tested.",
@@ -107,7 +107,7 @@ namespace DDV_SaveEditor_G.Modules
                 return MissingGroup.Other;
 
             // From an expansion the save itself says it doesn't own.
-            if (ItemPlacement.RequirementWarnings(root, row).Any(w => w.Contains("expansion this save doesn't have", StringComparison.Ordinal)))
+            if (ItemPlacement.MissingExpansion(root, row) != null)
                 return MissingGroup.NotOwnedExpansion;
 
             // Someone tried it in the game and it worked: that beats every guess below.

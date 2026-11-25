@@ -479,7 +479,8 @@ namespace DDV_SaveEditor_G.Data
             CatalogueCategory = r.CatalogueCategory,
             Tested = r.Tested,
             TestedOn = r.TestedOn,
-            TesterNotes = r.TesterNotes
+            TesterNotes = r.TesterNotes,
+            Patch = r.Patch
         };
 
         private static ItemRecord FromCached(CachedItemRecord c) => new()
@@ -503,7 +504,7 @@ namespace DDV_SaveEditor_G.Data
             // Diagnostic fields not in cache – defaults:
             LocalizedNames = new Dictionary<string, string>(),
             SubtypeSource = "",
-            Patch = "",
+            Patch = c.Patch,
             Dlc = "",
             Image = "",
             CatalogueCategory = c.CatalogueCategory,

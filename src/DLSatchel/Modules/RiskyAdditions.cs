@@ -37,13 +37,15 @@ namespace DDV_SaveEditor_G.Modules
                     if (reason.Length > 0)
                         found.Add(new RiskyItem(id, list.Name,
                             ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME", ItemDatabase.Get(row, "NAME", item.Name)), reason,
-                            OnlyUnchecked: reason == NotCheckedReason));
+                            OnlyUnchecked: reason is NotCheckedReason or GameObjectReason));
                 }
             }
             return found;
         }
 
         internal const string NotCheckedReason = "not checked by the community list";
+        // The game itself puts quest objects (Request/, Blocker/…) in the collections too.
+        internal const string GameObjectReason = "game object, may belong to a quest";
 
         internal static string Reason(System.Data.DataRow row)
         {
@@ -53,7 +55,7 @@ namespace DDV_SaveEditor_G.Modules
             // bulk, but not a reason to take them out again.
             if (!prefix.Equals("GroundAlteration", StringComparison.OrdinalIgnoreCase) &&
                 MissingItems.TechnicalPrefixes.Contains(prefix, StringComparer.OrdinalIgnoreCase))
-                return "game object, not a normal item";
+                return GameObjectReason;
             if (row["UNSAFE"] is true || ItemDatabase.Get(row, "SAFETY", "") == "UNSAFE")
                 return "marked UNSAFE in the lists";
             if (row["IS_TEST"] is true)

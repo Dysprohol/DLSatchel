@@ -67,19 +67,31 @@ namespace DDV_SaveEditor_G
         }
 
         public static MessageBoxResult Show(string text, string caption, MessageBoxButton buttons, MessageBoxImage icon,
-                                            Window? owner = null)
+                                            Window? owner = null) =>
+            Show(text, caption, buttons, icon, owner, null, out _);
+
+        /// <summary>Same, with a check box under the text (e.g. "Don't ask again"); its state comes back in <paramref name="optionChecked"/>.</summary>
+        public static MessageBoxResult Show(string text, string caption, MessageBoxButton buttons, MessageBoxImage icon,
+                                            Window? owner, string? option, out bool optionChecked)
         {
+            optionChecked = false;
             var app = Application.Current;
             if (app == null || !app.Dispatcher.CheckAccess())
                 return System.Windows.MessageBox.Show(text, caption, buttons, icon);
 
             var dialog = new DialogBox(text, caption, buttons, icon);
+            if (option != null)
+            {
+                dialog.Option.Content = option;
+                dialog.Option.Visibility = Visibility.Visible;
+            }
             owner = owner is { IsVisible: true } ? owner
                     : app.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive && w.IsVisible && w != dialog)
                       ?? (app.MainWindow is { IsVisible: true } main ? main : null);
             if (owner != null) dialog.Owner = owner;
             else dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             dialog.ShowDialog();
+            optionChecked = dialog.Option.IsChecked == true;
             return dialog._result;
         }
     }

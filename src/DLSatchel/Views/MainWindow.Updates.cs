@@ -20,6 +20,7 @@ namespace DDV_SaveEditor_G
             appSettings = AppSettings.Load();
             loadingUpdateSettings = true;
             CheckUpdatesAtStartCheckBox.IsChecked = appSettings.CheckUpdatesAtStart;
+            AskWarningsCheckBox.IsChecked = appSettings.AskBeforeAddingWarnedItems;
             loadingUpdateSettings = false;
 
             if (appSettings.CheckUpdatesAtStart)
@@ -37,6 +38,22 @@ namespace DDV_SaveEditor_G
         }
 
         private async void CheckUpdates_Click(object sender, RoutedEventArgs e) => await CheckForUpdatesAsync();
+
+        private void AskWarnings_Changed(object sender, RoutedEventArgs e)
+        {
+            if (loadingUpdateSettings || appSettings == null) return;
+            appSettings.AskBeforeAddingWarnedItems = AskWarningsCheckBox.IsChecked == true;
+            appSettings.Save();
+        }
+
+        private bool AskBeforeWarnedAdds => appSettings?.AskBeforeAddingWarnedItems ?? true;
+
+        /// <summary>The "don't ask again" box in a warning was ticked: stop asking, and show it in the main window.</summary>
+        private void StopAskingAboutWarnings()
+        {
+            AskWarningsCheckBox.IsChecked = false;   // its Changed handler saves the setting
+            AddStatusText.Text = "Warnings will show here instead of asking. Tick \"Ask before adding items with warnings\" to get the questions back.";
+        }
 
         private async Task CheckForUpdatesAsync()
         {
@@ -106,7 +123,8 @@ namespace DDV_SaveEditor_G
                                 "Update", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException
-                                           or InvalidDataException or UnauthorizedAccessException)
+                                           or InvalidDataException or UnauthorizedAccessException
+                                           or System.ComponentModel.Win32Exception)
             {
                 ShowUpdateStatus("The update could not be downloaded.");
                 MessageBox.Show($"The update could not be downloaded:\n{ex.Message}\n\nYou can get it from the releases page.",

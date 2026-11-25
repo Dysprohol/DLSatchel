@@ -23,7 +23,10 @@
                      Background="Transparent" Foreground="{StaticResource Starlight}" FontSize="13"
                      IsTabStop="False" Cursor="Arrow"/>
         </ScrollViewer>
-        <StackPanel x:Name="Buttons" Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal"
-                    HorizontalAlignment="Right" Margin="0,16,0,0"/>
+        <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,16,0,0" LastChildFill="False">
+            <CheckBox x:Name="Option" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,16,0"
+                      Visibility="Collapsed" Foreground="{StaticResource MutedStarlight}"/>
+            <StackPanel x:Name="Buttons" DockPanel.Dock="Right" Orientation="Horizontal"/>
+        </DockPanel>
     </Grid>
 </Window>

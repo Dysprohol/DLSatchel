@@ -75,13 +75,13 @@ namespace DDV.SaveEditor.Tests
             => Assert.Empty(BackpackIssues(Save(size, 0, 0, size - 1)));
 
         [Fact]
-        public void ExtraSizeIsCountedAsPartOfSize()
+        public void OnlySizeIsChecked_ExtraSizeIsLeftAlone()
         {
-            // The game treats ExtraSize as part of Size, so the check compares Size minus ExtraSize with 42.
+            // Measured: Size above 42 is set back by the game. ExtraSize's meaning is unknown (a real save
+            // has Size 42 with ExtraSize 43), so it neither causes nor hides a warning.
             Assert.Empty(BackpackIssues(Save(42, 0, 0)));
-            Assert.Empty(BackpackIssues(Save(42, 7, 0)));
-            Assert.Empty(BackpackIssues(Save(49, 7, 0)));
-            Assert.Single(BackpackIssues(Save(50, 7, 0)));
+            Assert.Empty(BackpackIssues(Save(42, 43, 0)));
+            Assert.Single(BackpackIssues(Save(49, 7, 0)));
         }
     }
 }

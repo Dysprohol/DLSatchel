@@ -32,6 +32,7 @@ namespace DDV_SaveEditor_G
 
             var dialog = new RestoreBackupDialog(backups) { Owner = this };
             if (dialog.ShowDialog() != true || dialog.Selected is not SaveBackup chosen) return;
+            if (!ConfirmDiscardEdits("Restore the backup")) return;
 
             try
             {
@@ -72,8 +73,8 @@ namespace DDV_SaveEditor_G
                 removed += Remove(strong);
 
             if (unchecked_.Count > 0 && AskToRemove(unchecked_,
-                    $"{unchecked_.Count} item(s) the community list hasn't checked yet were added since your first backup. " +
-                    "Some may be new items you really got in the game; others may be unfinished or developer items:",
+                    $"{unchecked_.Count} item(s) added since your first backup are new to the community list or are game objects. " +
+                    "Some may be quest items or new items you really got in the game; others may be unfinished or developer items:",
                     "Remove these too? If you're not sure, choose No - and if the game misbehaves, use Restore Backup…"))
                 removed += Remove(unchecked_);
 

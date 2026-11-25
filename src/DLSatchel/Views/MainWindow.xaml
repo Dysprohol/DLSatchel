@@ -190,6 +190,11 @@
                                       ToolTip="Teal: you have it. Blue: you don't. Items given to characters are not counted.">
                                 <TextBlock Text="Highlight owned / missing" TextWrapping="Wrap"/>
                             </CheckBox>
+                            <CheckBox Name="AskWarningsCheckBox" IsChecked="True" Margin="0,6,0,0"
+                                      Checked="AskWarnings_Changed" Unchecked="AskWarnings_Changed"
+                                      ToolTip="Off: items with warnings are added without a question; the warning shows in the line under Add item.">
+                                <TextBlock Text="Ask before adding items with warnings" TextWrapping="Wrap"/>
+                            </CheckBox>
                         </StackPanel>
                     </Grid>
                                         <!-- Add selected item and edit actions -->

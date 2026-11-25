@@ -156,8 +156,19 @@ namespace DDV_SaveEditor_G
             UpdateListsNotice();
             if (jsonData != null)
             {
-                RefreshInventoryDataGrid();
-                PopulatePets();
+                // Refresh names only: rebuilding these tables from the save would drop edits not saved yet.
+                if (InventoryTable is DataTable backpack)
+                    foreach (DataRow row in backpack.Rows)
+                        if (row.RowState != DataRowState.Deleted) InventoryModule.FillNames(row);
+                if (petTable != null)
+                    foreach (DataRow row in petTable.Rows)
+                    {
+                        if (row.RowState == DataRowState.Deleted) continue;
+                        var item = ItemDatabase.Find(Convert.ToInt64(row["Pet ID"]));
+                        string internalName = ItemDatabase.Get(item, "NAME", "Unknown companion");
+                        row["Name"] = internalName;
+                        row["Localized Name"] = ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME", internalName);
+                    }
                 PopulateMounts();
                 PopulateTools();
                 PopulatePresets();
@@ -192,6 +203,7 @@ namespace DDV_SaveEditor_G
 
         private void AutoDetectSave_Click(object sender, RoutedEventArgs e)
         {
+            if (!ConfirmDiscardEdits("Open another save")) return;
             var saves = SaveAutoDetect.FindAllSaves();
 
             if (saves.Count == 0)
@@ -216,8 +228,15 @@ namespace DDV_SaveEditor_G
                 LoadSave(wnd.SelectedSave.Profile, quiet: false);
         }
 
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!ConfirmDiscardEdits("Close the editor")) e.Cancel = true;
+            base.OnClosing(e);
+        }
+
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
+            if (!ConfirmDiscardEdits("Open another save")) return;
             var dlg = new OpenFileDialog
             {
                 Filter = "Game save (profile.json)|profile.json|JSON files (*.json)|*.json|All files (*.*)|*.*",
@@ -227,10 +246,32 @@ namespace DDV_SaveEditor_G
                 LoadSave(dlg.FileName, quiet: false);
         }
 
+        /// <summary>Edits that Save Changes would write: tables not yet in the save, or the save itself.</summary>
+        internal bool HasUnsavedEdits() =>
+            jsonData != null && (petsDirty || storageTables.Values.Any(t => t.GetChanges() != null) ||
+                                 InventoryTable?.GetChanges() != null ||
+                                 SaveDiffModule.Compare(loadedSaveSnapshot, jsonData, 1).HasChanges);
+
+        /// <summary>Asks before unsaved edits are thrown away. True when it is fine to go on.</summary>
+        internal bool ConfirmDiscardEdits(string what) =>
+            !HasUnsavedEdits() ||
+            MessageBox.Show($"You have edits that are not saved yet. {what} anyway? They will be lost.",
+                            "Unsaved Edits", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+
         private bool LoadSave(string profilePath, bool quiet)
         {
             // spróbuj wczytać (plain‑JSON albo zaszyfrowany); tworzy .bak przy pierwszym odczycie
-            if (!SaveDecoder.TryLoad(profilePath, out var decoded, out var json))
+            JObject json;
+            string decoded;
+            bool loaded;
+            try { loaded = SaveDecoder.TryLoad(profilePath, out decoded, out json); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                MessageBox.Show($"The save could not be opened: {ex.Message}", "Open Save",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            if (!loaded)
             {
                 MessageBox.Show("This file is not a save the editor can read.",
                                 "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -539,6 +580,15 @@ namespace DDV_SaveEditor_G
             return owned;
         }
 
+        /// <summary>Text for a DataView LIKE pattern: quotes doubled, wildcards and brackets taken literally.</summary>
+        internal static string LikeText(string text)
+        {
+            var sb = new System.Text.StringBuilder(text.Length);
+            foreach (char c in text)
+                sb.Append(c switch { '\'' => "''", '[' => "[[]", ']' => "[]]", '*' => "[*]", '%' => "[%]", _ => c.ToString() });
+            return sb.ToString();
+        }
+
         private void ApplyFilters()
         {
             // Guard‑clauses
@@ -548,13 +598,13 @@ namespace DDV_SaveEditor_G
             var clauses = new List<string>();
 
             /* 1 ▪ name  --------------------------------------------------- */
-            string name = SearchNameBox.Text.Trim().Replace("'", "''");       // escape '
+            string name = LikeText(SearchNameBox.Text.Trim());
             if (!string.IsNullOrEmpty(name))
                 clauses.Add(
                     $"([NAME] LIKE '%{name}%' OR [LOCALIZED_DISPLAY_NAME] LIKE '%{name}%')");
 
             /* 2 ▪ ID  ------------------------------------------------------ */
-            string idPart = SearchIdBox.Text.Trim().Replace("'", "''");
+            string idPart = LikeText(SearchIdBox.Text.Trim());
             if (!string.IsNullOrEmpty(idPart))
                 clauses.Add($"[ID] LIKE '%{idPart}%'");
 
@@ -1340,14 +1390,21 @@ namespace DDV_SaveEditor_G
         {
             var row = ItemDatabase.Find(id);
             var warnings = ItemWarnings(id, extraWarning);
-            if (warnings.Count == 0) return true;
+            lastAddWarning = warnings.FirstOrDefault();
+            if (warnings.Count == 0 || !AskBeforeWarnedAdds) return true;
 
             string label = row == null ? id : $"{ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME")} ({id})";
-            return MessageBox.Show(
-                       $"{label}\n\n• {string.Join("\n• ", warnings)}\n\n" +
-                       "Add it anyway? Back up your save first.",
-                       "Item Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+            bool yes = DialogBox.Show(
+                           $"{label}\n\n• {string.Join("\n• ", warnings)}\n\n" +
+                           "Add it anyway? Back up your save first.",
+                           "Item Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning, this,
+                           "Don't ask again", out bool stopAsking) == MessageBoxResult.Yes;
+            if (stopAsking) StopAskingAboutWarnings();
+            return yes;
         }
+
+        /// <summary>The first warning of the last item added, for the status line.</summary>
+        private string? lastAddWarning;
 
         /// <summary>Everything that speaks against adding an item; empty when the lists have no warnings.</summary>
         private List<string> ItemWarnings(string id, string? extraWarning)
@@ -1483,8 +1540,8 @@ namespace DDV_SaveEditor_G
             {
                 DataRow? row = ItemDatabase.Find(idTxt);
                 string? progressionWarning = ItemPlacement.GetRiskWarning(row);
-                bool allowManualRiskOverride = progressionWarning != null;
-                var manual = row == null || allowManualRiskOverride ? ManualPlacement() : null;
+                bool allowManualRiskOverride = false;   // a known item the game won't take is not forced in anywhere
+                var manual = row == null ? ManualPlacement() : null;
                 if (manual == null)
                 {
                     MessageBox.Show($"Can't add {idTxt}:\n{placement.Problem ?? "The editor doesn't know where this item goes."}",
@@ -1519,7 +1576,7 @@ namespace DDV_SaveEditor_G
             RefreshAfterAdd(placement.Kind);
             var itemRow = ItemDatabase.Find(idTxt);
             string safety = ItemDatabase.Get(itemRow, "SAFETY", "");
-            string risk = placement.Warning ?? (safety == "CAUTION"
+            string risk = lastAddWarning ?? placement.Warning ?? (safety == "CAUTION"
                 ? "Marked CAUTION in the item lists. Check it in the game."
                 : safety == "UNSAFE" ? "Added despite the UNSAFE warning." : "");
             string riskSuffix = string.IsNullOrEmpty(risk) ? "" : $"\n⚠ {risk}";
@@ -1630,7 +1687,11 @@ namespace DDV_SaveEditor_G
                 text.Append($"\n\nLeft out ({skipped.Count}):\n• " + string.Join("\n• ", skipped.Take(6)) +
                             (skipped.Count > 6 ? $"\n… and {skipped.Count - 6} more" : ""));
             MessageBoxResult answer;
-            if (risky.Count > 0)
+            if (!AskBeforeWarnedAdds)
+            {
+                // Asking is off: add them all; the status line says how many had warnings.
+            }
+            else if (risky.Count > 0)
             {
                 text.Append($"\n\n{risky.Count} of them have warnings:\n• " +
                             string.Join("\n• ", risky.Take(8).Select(r => $"{r.Name} - {r.Warning}")) +
@@ -1653,7 +1714,12 @@ namespace DDV_SaveEditor_G
                 added++;
             }
             foreach (var kind in kinds) RefreshAfterAdd(kind);
-            AddStatusText.Text = $"Added {added} of {plan.Count} selected items. Select Save Changes when you are ready.";
+            int selected = ids.Distinct().Count();
+            int warned = plan.Count(p => p.Warning != null);
+            AddStatusText.Text = $"Added {added} of {selected} selected items" +
+                                 (selected > added ? $" ({selected - added} left out)" : "") +
+                                 ". Select Save Changes when you are ready." +
+                                 (warned > 0 && !AskBeforeWarnedAdds ? $"\n⚠ {warned} of them have warnings (for example: {plan.First(p => p.Warning != null).Warning})" : "");
         }
 
         // 2) Usuwanie zaznaczonego (Backpack / Pets / Clothes / Storage)
@@ -1685,7 +1751,10 @@ namespace DDV_SaveEditor_G
                 case "Pets":
                     var pets = PetDataGrid.SelectedItems.Cast<DataRowView>().ToList();
                     if (pets.Count == 0) { MessageBox.Show("Select a companion to remove.", "Nothing Selected"); return; }
-                    var removablePets = pets.Where(rv =>
+                    // The companion that is out with the player stays: what the game does without it is unknown.
+                    long current = PetModule.GetCurrentPet(jsonData);
+                    bool keptCurrent = pets.Any(rv => Convert.ToInt64(rv["Pet ID"]) == current && current != 0);
+                    var removablePets = pets.Where(rv => Convert.ToInt64(rv["Pet ID"]) != current &&
                         PetModule.IsSupportedPet(jsonData, Convert.ToInt64(rv["Pet ID"]))).ToList();
                     int protectedPets = pets.Count - removablePets.Count;
                     foreach (var rv in removablePets)
@@ -1695,9 +1764,10 @@ namespace DDV_SaveEditor_G
                         petsDirty = true;   // zapis przy "Save Changes", jak w pozostałych zakładkach
                         ShowRemoved(removablePets.Count);
                     }
-                    if (protectedPets > 0)
-                        MessageBox.Show($"{protectedPets} companion(s) not in your item lists were kept.",
-                            "Kept", MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (keptCurrent)
+                        AddStatusText.Text += " The companion that is out with you was kept - choose another one in the game first.";
+                    else if (protectedPets > 0)
+                        AddStatusText.Text += $" {protectedPets} companion(s) not in your item lists were kept.";
                     return;
 
                 case "Clothes":
@@ -1711,11 +1781,12 @@ namespace DDV_SaveEditor_G
                         MessageBox.Show("Select a row to remove.", "Nothing Selected");
                         return;
                     }
-                    foreach (var row in PlayerInventoryDataGrid.SelectedItems.OfType<DataRowView>().ToList())
+                    var cleared = PlayerInventoryDataGrid.SelectedItems.OfType<DataRowView>().ToList();
+                    foreach (var row in cleared)
                         InventoryModule.ClearSlot(row.Row);
                     InventoryModule.UpdateJsonFromTable(jsonData, inventory);
                     RefreshInventoryDataGrid();
-                    ShowRemoved(PlayerInventoryDataGrid.SelectedItems.Count);
+                    ShowRemoved(cleared.Count);
                     return;
 
                 default:

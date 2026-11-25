@@ -40,7 +40,8 @@ namespace DDV_SaveEditor_G
                 : $"{presetName} is placed from {layout.Pieces} pieces of furniture. Your storage is missing:");
             text.AppendLine();
             foreach (var piece in missing.Take(15))
-                text.AppendLine($"• {piece.Name} ×{piece.Missing}" + (piece.Safety is "UNSAFE" or "CAUTION" ? $"  [{piece.Safety}]" : ""));
+                text.AppendLine($"• {piece.Name} ×{piece.Missing}" + (piece.Safety is "UNSAFE" or "CAUTION" ? $"  [{piece.Safety}]" : "") +
+                                (ItemPlacement.MissingExpansion(jsonData, ItemDatabase.Find(piece.Id)) is string exp ? $"  [{exp} not owned]" : ""));
             if (missing.Count > 15)
                 text.AppendLine($"… and {missing.Count - 15} more");
             if (notRoutable > 0)
@@ -78,7 +79,8 @@ namespace DDV_SaveEditor_G
             foreach (var (itemId, needed) in layout.Items.OrderBy(kv => kv.Key))
             {
                 var placement = ItemPlacement.Resolve(jsonData, itemId.ToString());
-                if (placement.Kind != PlacementKind.ListInventory || placement.ListKey == null ||
+                // A piece the game wouldn't take in that collection is skipped, like everywhere else.
+                if (placement.Kind != PlacementKind.ListInventory || placement.ListKey == null || placement.Problem != null ||
                     GetStorageTable(placement.ListKey) is not DataTable table)
                 {
                     notRoutable++;

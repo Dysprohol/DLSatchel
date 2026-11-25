@@ -42,21 +42,20 @@ namespace DDV_SaveEditor_G.Modules
                                      out JObject json)
         {
             decodedPath = originalPath;
-            LastLoadWasEncrypted = false;
+
+            // Decode first: a file that is not a save changes nothing - no .bak next to it, and the
+            // save that is open keeps being written the way it was read (encrypted or not).
+            if (!TryDecode(originalPath, out json, out bool encrypted, out string jsonTxt))
+                return false;
 
             /* 0 ▪ zawsze kopia .bak ------------------------------------ */
             string bak = $"{originalPath}.bak";
             if (!File.Exists(bak))
                 File.Copy(originalPath, bak, overwrite: false);
 
-            if (!TryDecode(originalPath, out json, out bool encrypted, out string jsonTxt))
-                return false;
-
+            LastLoadWasEncrypted = encrypted;
             if (encrypted)
-            {
                 decodedPath = WriteDecodedCopy(originalPath, jsonTxt);
-                LastLoadWasEncrypted = true;
-            }
             return true;
         }
 

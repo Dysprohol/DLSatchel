@@ -156,7 +156,9 @@ say - they are not a guarantee:
 Every warning says where it comes from - a test in the game, reports from players, or the item
 lists - and says so when nobody has tested it. A plain **CAUTION** item only gets a note in the
 status line; a window opens only when there is a real reason: quest items, **UNSAFE**, items the
-community hasn't checked, or a missing expansion.
+community hasn't checked, or a missing expansion. Tired of the questions? Tick **Don't ask again** in
+the window; the warnings then only show in the status line. **Ask before adding items with warnings**
+next to the search brings the questions back.
 
 ### A list of items tested in the game
 
