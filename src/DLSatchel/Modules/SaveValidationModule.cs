@@ -117,26 +117,42 @@ namespace DDV_SaveEditor_G.Modules
         private static void CheckItem(JObject root, long id, PlacementKind expected, string? listKey,
                                       string path, List<SaveValidationIssue> issues)
         {
+            // Only what a player can act on. Items the lists don't know are listed once, separately.
             var row = ItemDatabase.Find(id);
-            if (row == null)
-            {
-                issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"ID {id} is not in your item lists, so it can't be checked." });
-                return;
-            }
+            if (row == null) return;
+            string name = $"{ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME", id.ToString())} ({id})";
 
             var actual = ItemPlacement.Resolve(root, id.ToString());
             if (actual.Kind == PlacementKind.Unsupported)
             {
-                issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"ID {id}: {actual.Problem}" });
+                // The lists simply say too little about something the player has: not a problem with the save.
+                if (ItemDatabase.Get(row, "TYPE", "").Length == 0) return;
+                issues.Add(new()
+                {
+                    Level = SaveIssueLevel.Caution, Path = path,
+                    Message = $"{name} is here, but the item lists say it isn't something you can own. " +
+                              "If the editor added it, take it out; if the game gave it to you, leave it."
+                });
                 return;
             }
 
             bool matches = actual.Kind == expected &&
                            (expected != PlacementKind.ListInventory || actual.ListKey == listKey);
             if (!matches)
-                issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"ID {id} is in the wrong place. It belongs in {actual.Label}." });
-            else if (!string.IsNullOrWhiteSpace(actual.Warning))
-                issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"ID {id}: {actual.Warning}" });
+            {
+                // Also where the game uses it: an old copy (older game versions or tools left these), usually harmless.
+                bool alsoInRightPlace = actual.Kind == PlacementKind.ListInventory &&
+                    root["Player"]?["ListInventories"]?[actual.ListKey!]?["Inventory"]?[id.ToString()] != null;
+                // Between two collections the lists can be the ones that are wrong (the game wrote this
+                // save), so it is a warning, not a verdict. Anywhere else it is a real problem.
+                bool bothCollections = actual.Kind == PlacementKind.ListInventory && expected == PlacementKind.ListInventory;
+                issues.Add(alsoInRightPlace
+                    ? new() { Level = SaveIssueLevel.Info, Path = path, Message = $"{name}: an old extra copy. The one the game uses is in {actual.Label}." }
+                    : bothCollections
+                        ? new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"{name}: the item lists say it belongs in {actual.Label}. If it shows up in the game, leave it." }
+                        : new() { Level = SaveIssueLevel.Error, Path = path, Message = $"{name} is in the wrong place. It belongs in {actual.Label}." });
+            }
+            // Warnings about adding an item (untested paths, the mermaid form) don't concern items you already have.
         }
 
         private static void AddComplexAreaNote(JObject player, string key, string path, string message,
@@ -190,6 +206,7 @@ namespace DDV_SaveEditor_G.Modules
                 }
 
                 bool minimalRecord = mounts[i] is JObject record && record.Properties().All(p => p.Name == "MountItemID");
+                if (row != null && isMount && !minimalRecord) continue;   // an ordinary mount: nothing to report
                 issues.Add(new()
                 {
                     Level = row == null || (isMount && minimalRecord) ? SaveIssueLevel.Caution : isMount ? SaveIssueLevel.Info : SaveIssueLevel.Error,

@@ -37,7 +37,7 @@ namespace DDV_SaveEditor_G
             {
                 string copy = SaveBackups.Restore(jsonFilePath, chosen);
                 LoadSave(jsonFilePath, quiet: true);
-                MessageBox.Show($"Restored: {chosen.Label}.\n\nThe save you had before is kept as {Path.GetFileName(copy)}.",
+                MessageBox.Show($"Restored {chosen.Description}.\n\nThe save you had before is kept as {Path.GetFileName(copy)}.",
                                 "Restore Backup", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)

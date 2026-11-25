@@ -15,6 +15,13 @@ namespace DDV_SaveEditor_G.Modules
             : $"Before saving on {Format(Time, "d MMM yyyy, HH:mm:ss")}") + $"   ·   {Size / 1024.0:N0} KB";
 
         /// <summary>English month names, like the rest of the window.</summary>
+        /// <summary>What the copy is, without its size: for sentences like "Restored: …".</summary>
+        public string Description => BeforeFirstEdit
+            ? $"the copy from before your first edit ({Format(Time, "d MMM yyyy, HH:mm")})"
+            : $"the copy from {Format(Time, "d MMM yyyy, HH:mm:ss")}";
+
+        public override string ToString() => Label;
+
         public static string Format(DateTime time, string pattern) => time.ToString(pattern, CultureInfo.GetCultureInfo("en-GB"));
     }
 

@@ -39,8 +39,11 @@ namespace DDV.SaveEditor.Tests
             var issues = SaveValidationModule.Analyze(save);
 
             Assert.Contains(issues, issue => issue.Level == SaveIssueLevel.Error && issue.Path.Contains("ContainerInventories"));
-            Assert.Contains(issues, issue => issue.Level == SaveIssueLevel.Caution && issue.Message.Contains("49999999"));
-            Assert.Contains(issues, issue => issue.Path == "Player.Mounts[0]" && issue.Message.Contains("Test Mount"));
+            // Items the lists don't know are listed once, by SaveItemIds.NotInCatalog, not as a note per item.
+            Assert.Contains(SaveItemIds.NotInCatalog(save), u => u.Id == 49999999);
+            Assert.DoesNotContain(issues, issue => issue.Message.Contains("49999999"));
+            // An ordinary mount with its full record is nothing to act on, so Check Save stays quiet about it.
+            Assert.DoesNotContain(issues, issue => issue.Path == "Player.Mounts[0]");
             Assert.True(JToken.DeepEquals(before, save));
         }
     }

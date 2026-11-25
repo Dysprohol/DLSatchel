@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using MemoryPack;
 
@@ -48,6 +49,33 @@ namespace DDV_SaveEditor_G.Data
         /// <summary>From a tested-in-game list: "Works", "Broken" or "Careful" (empty when untested).</summary>
         public string Tested { get; set; } = "";
         public string TestedOn { get; set; } = "";
+        public string TesterNotes { get; set; } = "";
+
+        /// <summary>The tester's result in words, or "" when untested or it simply works.</summary>
+        [JsonIgnore, MemoryPackIgnore]
+        public string TestNote => Tested switch
+        {
+            "Broken" => $"Tested in the game{When}: does not work{Says}",
+            "Careful" => $"Tested in the game{When}: works, with care{Says}",
+            _ => ""
+        };
+
+        [JsonIgnore, MemoryPackIgnore] private string When => TestedOn.Length > 0 ? $" ({TestedOn})" : "";
+        [JsonIgnore, MemoryPackIgnore] private string Says => TesterNotes.Length > 0 ? $": {TesterNotes}" : "";
+
+        /// <summary>
+        /// The lists' own words for a warning. Notes that only repeat the item's name (presets keep
+        /// their name there) are skipped, so the player reads "Unreleased", not the name again.
+        /// </summary>
+        public static string ListReason(string display, string notes, string catalogue, string category)
+        {
+            var said = new[] { notes, catalogue }
+                .Where(v => !string.IsNullOrWhiteSpace(v) && !string.Equals(v.Trim(), display.Trim(), System.StringComparison.OrdinalIgnoreCase))
+                .Select(v => v.Trim())
+                .Distinct(System.StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return said.Count > 0 ? string.Join(" - ", said) : category;
+        }
 
         public SafetyState Safety { get; set; }
 

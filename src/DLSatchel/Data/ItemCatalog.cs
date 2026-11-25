@@ -478,7 +478,8 @@ namespace DDV_SaveEditor_G.Data
             IsTestItem = r.IsTestItem,
             CatalogueCategory = r.CatalogueCategory,
             Tested = r.Tested,
-            TestedOn = r.TestedOn
+            TestedOn = r.TestedOn,
+            TesterNotes = r.TesterNotes
         };
 
         private static ItemRecord FromCached(CachedItemRecord c) => new()
@@ -508,6 +509,7 @@ namespace DDV_SaveEditor_G.Data
             CatalogueCategory = c.CatalogueCategory,
             Tested = c.Tested,
             TestedOn = c.TestedOn,
+            TesterNotes = c.TesterNotes,
             Warnings = new List<string>(),
             Provenance = new Dictionary<string, SourceRef>(),
             TypeSource = ""

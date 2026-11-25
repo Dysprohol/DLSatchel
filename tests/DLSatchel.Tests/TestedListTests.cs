@@ -42,6 +42,8 @@ namespace DDV.SaveEditor.Tests
 
             Assert.Equal(SafetyState.Unsafe, catalog.Get(40000002)!.Safety);
             Assert.Contains(catalog.Get(40000002)!.Warnings, w => w.Contains("does not work") && w.Contains("freezes"));
+            // Built from cached fields, so it also shows when the lists come from the cache.
+            Assert.Equal("Tested in the game (1.26): does not work: game freezes when placed", catalog.Get(40000002)!.TestNote);
 
             // A tester's "works" beats an old community warning: it is what happened in the game.
             Assert.Equal(SafetyState.Tested, catalog.Get(40000003)!.Safety);

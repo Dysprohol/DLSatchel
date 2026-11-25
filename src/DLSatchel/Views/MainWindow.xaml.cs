@@ -1360,8 +1360,12 @@ namespace DDV_SaveEditor_G
             }
             else if (progressionWarning == null && ItemDatabase.IsUnsafe(row))
             {
-                warnings.Add($"The item lists mark it UNSAFE: " +
-                             $"{ItemDatabase.Get(row, "NOTES", ItemDatabase.Get(row, "CATEGORY"))}");
+                var record = ItemDatabase.FindRecord(long.Parse(id));
+                string said = record?.TestNote is { Length: > 0 } test
+                    ? test
+                    : ItemRecord.ListReason(ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME", ""), ItemDatabase.Get(row, "NOTES", ""),
+                                            record?.CatalogueCategory ?? "", ItemDatabase.Get(row, "CATEGORY", ""));
+                warnings.Add($"The item lists mark it UNSAFE: {said}");
             }
             else if (progressionWarning == null && ItemDatabase.Get(row, "SAFETY", "") == "CAUTION")
             {
@@ -1371,6 +1375,9 @@ namespace DDV_SaveEditor_G
             {
                 warnings.Add("The item lists say too little about it (UNKNOWN).");
             }
+            // What a tester wrote ("Tested in the game (1.26): does not work: freezes when placed").
+            if (row != null && !ItemDatabase.IsUnsafe(row) && ItemDatabase.FindRecord(long.Parse(id))?.TestNote is { Length: > 0 } note)
+                warnings.Add(note);
             if (row != null && !ItemDatabase.IsCommunityChecked(row))
                 warnings.Add("Not checked by the community yet: it may be new, unfinished or a developer item. Some of these break the game.");
             if (extraWarning != null)
@@ -1669,7 +1676,10 @@ namespace DDV_SaveEditor_G
                     foreach (var rv in removablePets)
                         rv.Row.Delete();
                     if (removablePets.Count > 0)
+                    {
                         petsDirty = true;   // zapis przy "Save Changes", jak w pozostałych zakładkach
+                        ShowRemoved(removablePets.Count);
+                    }
                     if (protectedPets > 0)
                         MessageBox.Show($"{protectedPets} companion(s) not in your item lists were kept.",
                             "Kept", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1690,6 +1700,7 @@ namespace DDV_SaveEditor_G
                         InventoryModule.ClearSlot(row.Row);
                     InventoryModule.UpdateJsonFromTable(jsonData, inventory);
                     RefreshInventoryDataGrid();
+                    ShowRemoved(PlayerInventoryDataGrid.SelectedItems.Count);
                     return;
 
                 default:
@@ -1697,17 +1708,21 @@ namespace DDV_SaveEditor_G
             }
         }
 
-        private static void RemoveSelectedInventoryRows(DataGrid? grid)
+        private void RemoveSelectedInventoryRows(DataGrid? grid)
         {
             var items = grid?.SelectedItems.OfType<DataRowView>().ToList() ?? new List<DataRowView>();
             if (items.Count == 0) { MessageBox.Show("Select items to remove.", "Nothing Selected"); return; }
             var removable = items.Where(rv => int.TryParse(rv["Amount"]?.ToString(), out int amount) && amount > 0).ToList();
             int protectedRows = items.Count - removable.Count;
             foreach (var rv in removable) rv.Row.Delete();
+            if (removable.Count > 0) ShowRemoved(removable.Count);
             if (protectedRows > 0)
                 MessageBox.Show($"{protectedRows} item(s) with amount 0 were kept: they are probably placed in your valley.",
                     "Kept", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        private void ShowRemoved(int count) =>
+            AddStatusText.Text = $"Removed {count} item(s). Click Save Changes to keep this, or Discard edits to undo.";
 
         // 3) Double‐click w ExcelDataGrid → dodaje +1 szt. do aktywnej zakładki
         private void ExcelDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)

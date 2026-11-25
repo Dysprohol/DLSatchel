@@ -1,0 +1,29 @@
+<Window x:Class="DDV_SaveEditor_G.DialogBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="/DLSatchel;component/Assets/Icons/logo.png"
+        Background="{StaticResource WindowBackground}" Foreground="{StaticResource Starlight}"
+        FontFamily="Segoe UI" FontSize="13"
+        MinWidth="380" MaxWidth="640" SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False">
+    <Grid Margin="18,16,18,14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock x:Name="Glyph" FontFamily="Segoe MDL2 Assets" FontSize="26" Margin="0,2,14,0"
+                   VerticalAlignment="Top" Visibility="Collapsed"/>
+        <ScrollViewer Grid.Column="1" MaxHeight="520" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <!-- A read-only box instead of plain text, so people can select and copy what it says. -->
+            <TextBox x:Name="MessageText" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Padding="0"
+                     Background="Transparent" Foreground="{StaticResource Starlight}" FontSize="13"
+                     IsTabStop="False" Cursor="Arrow"/>
+        </ScrollViewer>
+        <StackPanel x:Name="Buttons" Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="0,16,0,0"/>
+    </Grid>
+</Window>

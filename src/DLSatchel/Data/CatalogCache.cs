@@ -36,6 +36,7 @@ namespace DDV_SaveEditor_G.Data
         public string CatalogueCategory { get; set; } = "";
         public string Tested { get; set; } = "";
         public string TestedOn { get; set; } = "";
+        public string TesterNotes { get; set; } = "";
     }
 
     /// <summary>Serialized form of a built catalog snapshot, used by the on-disk cache.</summary>
@@ -59,7 +60,7 @@ namespace DDV_SaveEditor_G.Data
     /// </summary>
     public static class CatalogCache
     {
-        public const string SchemaVersion = "10"; // CachedItemRecord gained Tested / TestedOn
+        public const string SchemaVersion = "11"; // CachedItemRecord gained Tested / TestedOn / TesterNotes
         public const string FileName = "catalog-v6.bin";
 
         public static string DefaultDirectory => Path.Combine(

@@ -919,9 +919,9 @@ namespace DDV_SaveEditor_G.Data
                 if (type.Length == 0 && category.Length == 0)
                     warnings.Add("Neither TYPE nor Category is known.");
                 if (safety == SafetyState.Unsafe && tested != "Broken")
-                    warnings.Add($"Marked UNSAFE by the source: {FirstNonEmpty(notes, category, catalogue)}");
+                    warnings.Add($"Marked UNSAFE by the source: {ItemRecord.ListReason(display, notes, catalogue, category)}");
                 if (safety == SafetyState.Caution && tested != "Careful")
-                    warnings.Add($"Marked CAUTION by the source: {FirstNonEmpty(notes, category, catalogue)}");
+                    warnings.Add($"Marked CAUTION by the source: {ItemRecord.ListReason(display, notes, catalogue, category)}");
 
                 string searchText = TextNormalizer.FoldForSearch(
                     $"{display} {name} {source.Id} {subtype} {category}");
@@ -946,6 +946,7 @@ namespace DDV_SaveEditor_G.Data
                     CatalogueCategory = catalogue,
                     Tested = tested,
                     TestedOn = testedOn,
+                    TesterNotes = testerNotes,
                     Safety = safety,
                     Warnings = warnings,
                     Placement = placement,
