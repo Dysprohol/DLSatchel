@@ -981,13 +981,13 @@ namespace DDV_SaveEditor_G
             apply.Click += (_, _) =>
             {
                 // The game's largest backpack (its last upgrade). Checked in the game: a bigger size is set
-                // back to this on the next save, and items beyond it are moved into free slots.
+                // back to this on the next save; items beyond it are moved into free slots, or deleted if there are none.
                 int max = SlotUpgradeComboBox.Items.OfType<ComboBoxItem>()
                     .Select(i => int.TryParse(i.Tag?.ToString(), out int n) ? n : 0).DefaultIfEmpty(42).Max();
                 bool number = int.TryParse(sizeBox.Text, out int value) && value > 0;
                 bool proceed = number && (value <= max || MessageBox.Show(dialog,
-                    $"The game's backpack goes up to {max}. In our test the game set a bigger one back to {max} on its next save " +
-                    $"and moved the extra items into free slots (a full backpack wasn't tested).\n\nUse {value} anyway?",
+                    $"The game sets the backpack back to {max} on its next save. " +
+                    $"Items beyond slot {max} are moved into free slots if there is room, otherwise deleted.\n\nUse {value} anyway?",
                     "Backpack Size", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
                 if (!proceed)
                 {

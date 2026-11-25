@@ -56,6 +56,8 @@ namespace DDV_SaveEditor_G.Modules
                 }
             }
 
+            InspectBackpackSize(player, issues);
+
             if (player["Pets"] is JArray pets)
             {
                 var seenPets = new HashSet<long>();
@@ -153,6 +155,32 @@ namespace DDV_SaveEditor_G.Modules
                         : new() { Level = SaveIssueLevel.Error, Path = path, Message = $"{name} is in the wrong place. It belongs in {actual.Label}." });
             }
             // Warnings about adding an item (untested paths, the mermaid form) don't concern items you already have.
+        }
+
+        /// <summary>
+        /// A backpack bigger than the game's largest. The game counts ExtraSize as part of Size, sets a bigger
+        /// one back to 42 on its next save, and deletes items beyond slot 42 when there is no free slot for them.
+        /// </summary>
+        private static void InspectBackpackSize(JObject player, List<SaveValidationIssue> issues)
+        {
+            if (player["ContainerInventories"]?["0"] is not JObject container) return;
+            long size = ReadId(container["Size"]) - ReadId(container["ExtraSize"]);
+            const int max = InventoryModule.GameMaxBackpackSlots;
+            if (size <= max) return;
+
+            int beyond = container["Inventory"] is JArray slots
+                ? slots.Skip(max).Count(slot => ReadId(slot?["ItemID"]) > 0)
+                : 0;
+            string advice = beyond > 0
+                ? $" {beyond} item(s) are beyond slot {max}: move them to the first {max} slots or set the backpack to {max}."
+                : $" Set the backpack to {max}.";
+            issues.Add(new()
+            {
+                Level = SaveIssueLevel.Caution,
+                Path = "Player.ContainerInventories.0",
+                Message = $"Your backpack is set to {size} slots; the game allows {max}. On its next save the game sets it back to {max} " +
+                          $"and deletes items beyond slot {max} if there is no free slot for them.{advice}"
+            });
         }
 
         private static void AddComplexAreaNote(JObject player, string key, string path, string message,

@@ -19,6 +19,9 @@ namespace DDV_SaveEditor_G.Modules
         private const string OrigIdCol = "Orig ID";
         private const string OriginalJsonCol = "__OriginalJson";
 
+        /// <summary>The game's largest backpack (its last upgrade); a bigger Size is set back to this on its next save.</summary>
+        internal const int GameMaxBackpackSlots = 42;
+
         private static JObject? Container(JObject json)
             => json["Player"]?["ContainerInventories"]?["0"] as JObject;
 

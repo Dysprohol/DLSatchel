@@ -88,6 +88,9 @@ items the community list hasn't checked yet (new, unfinished or developer items 
 files). Things already placed in your valley count as yours, so you don't get them twice. Items
 marked unsafe, unreleased or test, and technical game objects, are never added.
 
+If your save doesn't list an expansion as bought, its items get a warning and go into their own
+group here, unticked. A player lost that expansion's area after adding such items.
+
 Nothing here is guaranteed. The lists are made by players and can be wrong, especially right after
 a game update. **Back up your save, add a little, check in the game, then add more.**
 
@@ -99,6 +102,20 @@ A game update added mermaid tails, fins and ears, and ship skins. They go to you
 skins like any other item, but you can wear and use them only after the game unlocks the mermaid
 form and the ship in its story. They are marked **CAUTION**, and until your save has the mermaid form
 or the ship, the editor warns you when you add them.
+
+## Mounts
+
+Open the **Mounts** tab, pick a mount and click **Add item**. If your save already has mounts, the
+game sets up the new one's bond and favourite treats by itself (tested in the game). If it has none
+yet, the editor warns you: the game hasn't unlocked mounts, and a player got a white screen after
+adding a horse that early. The editor can't remove mounts.
+
+## Backpack size
+
+The game's backpack goes up to 42 slots, and any size up to 42 works on any save, even a new one
+(tested). The editor lets you set more after a warning, but the game
+sets it back to 42 the next time it saves: items in the extra slots move to free slots if there is
+room, otherwise they are deleted. **Check Save** warns you about a backpack above 42.
 
 ## When the game updates
 
@@ -135,6 +152,11 @@ say - they are not a guarantee:
 | **CAUTION** (brown row) | A quest, event or shop item. Added too early, it can get a quest stuck. |
 | **UNSAFE** | Broken or a test item that can damage a save. Hidden unless you turn it on. |
 | **UNKNOWN** | The lists say too little about it. |
+
+Every warning says where it comes from - a test in the game, reports from players, or the item
+lists - and says so when nobody has tested it. A plain **CAUTION** item only gets a note in the
+status line; a window opens only when there is a real reason: quest items, **UNSAFE**, items the
+community hasn't checked, or a missing expansion.
 
 ### A list of items tested in the game
 
