@@ -6,9 +6,9 @@
         Background="{StaticResource WindowBackground}"
         Foreground="{StaticResource Starlight}"
         FontFamily="Segoe UI" FontSize="13"
-        Height="300" Width="520"
+        Height="340" Width="560" MinHeight="260" MinWidth="460"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="CanResizeWithGrip">
 
     <Grid Margin="10">
         <Grid.RowDefinitions>

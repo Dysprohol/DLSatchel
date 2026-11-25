@@ -206,7 +206,9 @@ namespace DDV_SaveEditor_G.Modules
                 }
 
                 bool minimalRecord = mounts[i] is JObject record && record.Properties().All(p => p.Name == "MountItemID");
-                if (row != null && isMount && !minimalRecord) continue;   // an ordinary mount: nothing to report
+                // An ordinary mount, or one the editor just added (the game completes its record on load).
+                // Unknown mounts are already in the separate list of items the lists don't know.
+                if (row == null || isMount) continue;
                 issues.Add(new()
                 {
                     Level = row == null || (isMount && minimalRecord) ? SaveIssueLevel.Caution : isMount ? SaveIssueLevel.Info : SaveIssueLevel.Error,

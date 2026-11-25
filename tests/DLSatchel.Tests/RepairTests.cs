@@ -109,6 +109,29 @@ namespace DDV.SaveEditor.Tests
         }
 
         [Fact]
+        public async Task ItemsFromAnExpansionTheSaveLacks_AndMountsBeforeTheStable_AreWarnedAbout()
+        {
+            string directory = XlsxBuilder.NewTempDirectory();
+            string dump = XlsxBuilder.WriteCsv(Path.Combine(directory, "dump.csv"),
+                "ID,NAME,LOCALIZED_DISPLAY_NAME,TYPE\n" +
+                "120000269,Pet/Expansion04!Penguin!Penguin05,Penguin,Companion\n" +
+                "120000270,Pet/Expansion01!Fox!Fox01,Fox,Companion\n" +
+                "120300002,Mount/Mulan!Khan,Khan,Companion\n" +
+                "40000001,Furniture/Chair,Chair,Furniture\n");
+            var (catalog, _) = await CatalogHarness.LoadAsync((dump, 10));
+            ItemDatabase.SetCatalog(catalog);
+            var save = JObject.Parse("""{ "LastKnownBoughtExpansionsAnyPlatform": ["BaseGame", "Expansion01"], "Player": { "Mounts": [] } }""");
+
+            Assert.Contains("Expansion04", Assert.Single(ItemPlacement.RequirementWarnings(save, ItemDatabase.Find(120000269))));
+            Assert.Empty(ItemPlacement.RequirementWarnings(save, ItemDatabase.Find(120000270)));
+            Assert.Contains("No mounts unlocked", Assert.Single(ItemPlacement.RequirementWarnings(save, ItemDatabase.Find(120300002))));
+            Assert.Empty(ItemPlacement.RequirementWarnings(save, ItemDatabase.Find(40000001)));
+
+            // A save that doesn't list its expansions (older versions) gets no guess either way.
+            Assert.Empty(ItemPlacement.RequirementWarnings(JObject.Parse("""{ "Player": {} }"""), ItemDatabase.Find(120000269)));
+        }
+
+        [Fact]
         public async Task CharactersAreRefused_WithAPlainReason()
         {
             string directory = XlsxBuilder.NewTempDirectory();

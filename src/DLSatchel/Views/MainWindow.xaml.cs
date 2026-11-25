@@ -258,11 +258,9 @@ namespace DDV_SaveEditor_G
             ValidateSaveButton.IsEnabled = true;
             RestoreBackupButton.IsEnabled = true;
 
-            if (!quiet)
-            {
-                MessageBox.Show("Save loaded. A backup is kept next to it.",
-                    "Save Loaded", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+            // A line, not a window: nothing to decide here.
+            AddStatusText.Text = $"Save loaded: {jsonData["Player"]?["Name"]}, level {jsonData["Player"]?["Level"]}. " +
+                                 "Nothing changes until you click Save Changes.";
             return true;
         }
 
@@ -355,11 +353,9 @@ namespace DDV_SaveEditor_G
                 UpdateCatalogOwnership();
 
                 RefreshInventoryDataGrid();
-                MessageBox.Show("All changes were saved successfully.\n" +
-                                (backupPath == null
-                                    ? "A new save file was created; there was no previous file to back up."
-                                    : $"Backup of the previous file: {backupPath}"),
-                                "Saved", MessageBoxButton.OK, MessageBoxImage.Information);
+                AddStatusText.Text = backupPath == null
+                    ? $"Saved at {DateTime.Now:HH:mm}. This is a new file, so there was nothing to back up."
+                    : $"Saved at {DateTime.Now:HH:mm}. The save from before is kept: Restore Backup… goes back to it.";
             }
             catch (Exception ex)
             {
@@ -704,7 +700,7 @@ namespace DDV_SaveEditor_G
             {
                 "Backpack" => "Backpack: what you carry, slot by slot.",
                 "Pets" => "Companions: your pets and critters.",
-                "Mounts" => "Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy. Mounts can't be removed by the editor.",
+                "Mounts" => "A new mount gets its bond and favourite treats from the game the first time it loads (tested). Mounts can't be removed by the editor.",
                 "Tools" => "Tools & Accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
                 "Presets" => "Presets: ready-made decoration sets. Adding one also offers the furniture it needs. Removing is not supported.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
@@ -931,12 +927,12 @@ namespace DDV_SaveEditor_G
             {
                 Title = "Custom Backpack Size",
                 Owner = this,
-                Width = 360,
-                Height = 170,
+                Width = 380,
+                SizeToContent = SizeToContent.Height,   // a fixed height cut the buttons off
                 ResizeMode = ResizeMode.NoResize,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ShowInTaskbar = false,
-                Background = (System.Windows.Media.Brush)FindResource("Panel"),
+                Background = (System.Windows.Media.Brush)FindResource("WindowBackground"),
                 Foreground = (System.Windows.Media.Brush)FindResource("Starlight"),
                 FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
                 FontSize = 13
@@ -949,7 +945,8 @@ namespace DDV_SaveEditor_G
             layout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var prompt = new TextBlock
             {
-                Text = "Enter the number of backpack slots:",
+                Text = $"Number of backpack slots (the game itself goes up to {SlotUpgradeComboBox.Items.OfType<ComboBoxItem>().Select(i => int.TryParse(i.Tag?.ToString(), out int n) ? n : 0).DefaultIfEmpty(42).Max()}):",
+                TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(0, 0, 0, 8),
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -983,10 +980,20 @@ namespace DDV_SaveEditor_G
             cancel.Click += (_, _) => dialog.DialogResult = false;
             apply.Click += (_, _) =>
             {
-                if (!int.TryParse(sizeBox.Text, out int value) || value <= 0)
+                // The game's largest backpack (its last upgrade). Checked in the game: a bigger size is set
+                // back to this on the next save, and items beyond it are moved into free slots.
+                int max = SlotUpgradeComboBox.Items.OfType<ComboBoxItem>()
+                    .Select(i => int.TryParse(i.Tag?.ToString(), out int n) ? n : 0).DefaultIfEmpty(42).Max();
+                bool number = int.TryParse(sizeBox.Text, out int value) && value > 0;
+                bool proceed = number && (value <= max || MessageBox.Show(dialog,
+                    $"The game's backpack goes up to {max}. In our test the game set a bigger one back to {max} on its next save " +
+                    $"and moved the extra items into free slots (a full backpack wasn't tested).\n\nUse {value} anyway?",
+                    "Backpack Size", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes);
+                if (!proceed)
                 {
-                    MessageBox.Show(dialog, "Enter a whole number greater than zero.", "Invalid Slot Size",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    if (!number)
+                        MessageBox.Show(dialog, "Enter a whole number greater than zero.", "Backpack Size",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
                     sizeBox.Focus();
                     sizeBox.SelectAll();
                     return;
@@ -1059,13 +1066,13 @@ namespace DDV_SaveEditor_G
             if (jsonData == null)
             {
                 MountsDataGrid.ItemsSource = null;
-                MountsStatusText.Text = "Load a save to see your mounts. Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy.";
+                MountsStatusText.Text = "Load a save to see your mounts.";
                 return;
             }
 
             var table = MountModule.MapMounts(jsonData);
             MountsDataGrid.ItemsSource = table.DefaultView;
-            MountsStatusText.Text = $"Unlocked mounts: {table.Rows.Count}. Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy. Mounts can't be removed by the editor.";
+            MountsStatusText.Text = $"Unlocked mounts: {table.Rows.Count}. A new mount gets its bond and favourite treats from the game the first time it loads (tested). Mounts can't be removed by the editor.";
         }
 
         private void PopulateTools()
@@ -1343,14 +1350,18 @@ namespace DDV_SaveEditor_G
         }
 
         /// <summary>Everything that speaks against adding an item; empty when the lists have no warnings.</summary>
-        private static List<string> ItemWarnings(string id, string? extraWarning)
+        private List<string> ItemWarnings(string id, string? extraWarning)
         {
             var row = ItemDatabase.Find(id);
             var warnings = new List<string>();
 
-            string? progressionWarning = ItemPlacement.GetRiskWarning(row);
+            // An UNSAFE item gets the lists' own words below; the general "quest / do not craft"
+            // caution would only say the same thing again.
+            string? progressionWarning = row != null && ItemDatabase.IsUnsafe(row) ? null : ItemPlacement.GetRiskWarning(row);
             if (progressionWarning != null)
                 warnings.Add(progressionWarning);
+            if (jsonData != null)
+                warnings.AddRange(ItemPlacement.RequirementWarnings(jsonData, row));
 
             if (row == null)
             {
@@ -1369,7 +1380,11 @@ namespace DDV_SaveEditor_G
             }
             else if (progressionWarning == null && ItemDatabase.Get(row, "SAFETY", "") == "CAUTION")
             {
-                warnings.Add("The item lists mark it CAUTION. Check it in the game after adding.");
+                // Only worth a question when the list talks about quests or breakage; a plain
+                // CAUTION ("Event Reward") shows in the status line after adding instead.
+                string notes = ItemDatabase.Get(row, "NOTES", "");
+                if (System.Text.RegularExpressions.Regex.IsMatch(notes, "(?i)quest|mission|bug|break|don'?t|do not"))
+                    warnings.Add($"The community list says: \"{notes.Trim()}\"");
             }
             else if (progressionWarning == null && ItemDatabase.Get(row, "SAFETY", "") == "UNKNOWN")
             {
@@ -1379,7 +1394,7 @@ namespace DDV_SaveEditor_G
             if (row != null && !ItemDatabase.IsUnsafe(row) && ItemDatabase.FindRecord(long.Parse(id))?.TestNote is { Length: > 0 } note)
                 warnings.Add(note);
             if (row != null && !ItemDatabase.IsCommunityChecked(row))
-                warnings.Add("Not checked by the community yet: it may be new, unfinished or a developer item. Some of these break the game.");
+                warnings.Add("Not checked by the community: may be unfinished or a developer item (some broke games).");
             if (extraWarning != null)
                 warnings.Add(extraWarning);
             return warnings;

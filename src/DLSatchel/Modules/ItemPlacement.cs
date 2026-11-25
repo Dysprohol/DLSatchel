@@ -96,7 +96,9 @@ namespace DDV_SaveEditor_G.Modules
                             {
                                 Kind = PlacementKind.Mount,
                                 Label = "Mounts",
-                                Warning = "Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy."
+                                // The game fills in bond and favourite treats itself (checked in the game, 1.26).
+                                // A save without any mount gets a warning from RequirementWarnings.
+                                Warning = null
                             }
                             : Unsupported("This save has no mounts yet, so mounts can't be added.");
 
@@ -220,7 +222,9 @@ namespace DDV_SaveEditor_G.Modules
                 if (doNotCraft) reasons.Add("the item lists say \"do not craft\"");
                 if (characterHouse) reasons.Add("it belongs to a character's house");
                 if (progression) reasons.Add("it is part of a quest, event or character story");
-                return $"Caution: {string.Join("; ", reasons)}. It can get a quest stuck or damage the save. Back up first.";
+                // Forum reports (2026): quests stuck after their item was added early (Vanellope, picnic preset),
+                // saves that needed a restart. Not tested by the editor.
+                return $"{Capitalize(string.Join("; ", reasons))}. Players report stuck quests and broken saves from items like this.";
             }
             return null;
         }
@@ -258,6 +262,30 @@ namespace DDV_SaveEditor_G.Modules
 
             return null;
         }
+
+        /// <summary>
+        /// What the item needs that this save may not have: an expansion it doesn't own (the save
+        /// lists the ones bought, as "Expansion01"… / "WinnieDLC"), or, for a mount, the stable and
+        /// quests that come first. Without them the game's reaction is unknown, so the player is told.
+        /// </summary>
+        public static List<string> RequirementWarnings(JObject root, DataRow? row)
+        {
+            var warnings = new List<string>();
+            if (row == null) return warnings;
+            string name = ItemDatabase.Get(row, "NAME", "");
+
+            var tag = System.Text.RegularExpressions.Regex.Match(name, @"Expansion0\d|WinnieDLC");
+            if (tag.Success && root["LastKnownBoughtExpansionsAnyPlatform"] is JArray owned &&
+                !owned.Any(t => string.Equals(t.ToString(), tag.Value, StringComparison.OrdinalIgnoreCase)))
+                warnings.Add($"From an expansion this save doesn't have ({tag.Value}). A player reported losing that expansion's area after adding such items.");
+
+            if (name.StartsWith("Mount/", StringComparison.OrdinalIgnoreCase) && ItemDatabase.Get(row, "TYPE", "") == "Companion" &&
+                root["Player"]?["Mounts"] is JArray { Count: 0 })
+                warnings.Add("No mounts unlocked in this save yet. A player reported a white screen after adding a horse this early.");
+            return warnings;
+        }
+
+        private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
 
         private static Placement Unsupported(string why) =>
             new() { Kind = PlacementKind.Unsupported, Label = "—", Problem = why };

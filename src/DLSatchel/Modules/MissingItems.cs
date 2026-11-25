@@ -13,6 +13,7 @@ namespace DDV_SaveEditor_G.Modules
         Ordinary,
         Shop,
         Dlc,
+        NotOwnedExpansion,
         Event,
         Quest,
         Unlock,
@@ -37,6 +38,7 @@ namespace DDV_SaveEditor_G.Modules
             MissingGroup.Ordinary => "Ordinary items",
             MissingGroup.Shop => "Shop and Premium items",
             MissingGroup.Dlc => "Expansion and DLC items",
+            MissingGroup.NotOwnedExpansion => "From expansions this save doesn't have",
             MissingGroup.Event => "Event and Star Path items",
             MissingGroup.Quest => "Quest rewards",
             MissingGroup.Unlock => "Mermaid parts and ship skins",
@@ -51,12 +53,13 @@ namespace DDV_SaveEditor_G.Modules
             MissingGroup.Tested => "Players tried them in the game and they worked. A big game update can change that.",
             MissingGroup.Ordinary => "Items the lists have no warnings about.",
             MissingGroup.Shop => "Sold in the game's shop or in bundles, including premium Star Path rewards.",
-            MissingGroup.Dlc => "Belong to an expansion or DLC. Tick them only if you own it - without it they may not show up or work.",
+            MissingGroup.Dlc => "From expansions or DLC. Tick them only if you own them.",
+            MissingGroup.NotOwnedExpansion => "Your save doesn't list these expansions as bought. A player reported losing an expansion's area after adding such items.",
             MissingGroup.Event => "From events and Star Paths.",
-            MissingGroup.Quest => "Given by quests. Having one too early can confuse a quest that is meant to give it.",
+            MissingGroup.Quest => "Given by quests. Players report quests getting stuck when the reward is already there.",
             MissingGroup.Unlock => "Used by the mermaid form or the ship the game unlocks in its story. Adding them before that isn't tested.",
             MissingGroup.Skins => "A style only works for a house, building or character you already have. A style for something you don't have can break menus in the game.",
-            MissingGroup.NotChecked => "Not in the community list: new items nobody has checked yet, or unfinished or developer items. Some of them break the game.",
+            MissingGroup.NotChecked => "Not in the community list: new, unfinished or developer items (some broke games).",
             MissingGroup.Unclear => "The lists give no type or notes, so they cannot be checked.",
             _ => "The lists mark them with a caution (for example \"can bug\" or \"careful\")."
         };
@@ -102,6 +105,10 @@ namespace DDV_SaveEditor_G.Modules
             // changes): never something to hand out in bulk.
             if (TechnicalPrefixes.Contains(NamePrefix(name), StringComparer.OrdinalIgnoreCase))
                 return MissingGroup.Other;
+
+            // From an expansion the save itself says it doesn't own.
+            if (ItemPlacement.RequirementWarnings(root, row).Any(w => w.Contains("expansion this save doesn't have", StringComparison.Ordinal)))
+                return MissingGroup.NotOwnedExpansion;
 
             // Someone tried it in the game and it worked: that beats every guess below.
             if (ItemDatabase.Get(row, "SAFETY", "") == "TESTED")

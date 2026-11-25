@@ -150,9 +150,8 @@ namespace DDV_SaveEditor_G
             try
             {
                 Clipboard.SetText(text.ToString());
-                MessageBox.Show("A report is on your clipboard. Paste it into your post and fill in the last three lines.\n\n" +
-                                "It holds no personal data - only versions, counts and list names.",
-                                "Copy Report", MessageBoxButton.OK, MessageBoxImage.Information);
+                AddStatusText.Text = "Report copied (versions, counts and list names - nothing personal). " +
+                                     "Paste it into your post and fill in the last three lines.";
             }
             catch (Exception ex)
             {

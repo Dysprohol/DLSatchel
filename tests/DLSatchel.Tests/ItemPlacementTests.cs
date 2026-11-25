@@ -130,7 +130,9 @@ namespace DDV.SaveEditor.Tests
 
             Placement placement = ItemPlacement.Resolve(save, "42000003");
             Assert.Equal(PlacementKind.Mount, placement.Kind);
-            Assert.Contains("experimental", placement.Warning);
+            // Checked in the game: it completes a new mount's record itself, so a save that already has
+            // mounts gets no warning (a save without any gets one from RequirementWarnings).
+            Assert.Null(placement.Warning);
             Assert.True(MountModule.AddMount(save, 42000003));
             Assert.False(MountModule.AddMount(save, 42000003));
             Assert.Equal(42000003, save["Player"]?["Mounts"]?[1]?["MountItemID"]?.Value<long>());
@@ -142,7 +144,8 @@ namespace DDV.SaveEditor.Tests
             Assert.True((bool)save["Player"]?["ContainerInventories"]?["9"]?["CharacterData"]!);
 
             var issues = SaveValidationModule.Analyze(save);
-            Assert.Contains(issues, issue => issue.Level == SaveIssueLevel.Caution && issue.Message.Contains("no bond or look settings"));
+            // The game completes the new mount's record on load, so Check Save has nothing to say about it.
+            Assert.DoesNotContain(issues, issue => issue.Path.StartsWith("Player.Mounts", System.StringComparison.Ordinal));
         }
 
         [Fact]
