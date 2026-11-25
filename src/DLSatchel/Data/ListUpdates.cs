@@ -33,6 +33,20 @@ namespace DDV_SaveEditor_G.Data
         public static bool HasEnabledLists(SourcesConfig config) =>
             config.Sources.Any(s => s.Enabled && File.Exists(s.Path));
 
+        /// <summary>
+        /// True when the game was updated after the oldest enabled list was downloaded: new items
+        /// from that update may be missing from the lists, or not checked by anyone yet.
+        /// </summary>
+        public static bool GameNewerThanLists(SourcesConfig config, DateTime? gameUpdatedUtc)
+        {
+            if (gameUpdatedUtc is not DateTime game) return false;
+            var listTimes = config.Sources
+                .Where(s => s.Enabled && File.Exists(s.Path))
+                .Select(s => s.UpdatedUtc ?? File.GetLastWriteTimeUtc(s.Path))
+                .ToList();
+            return listTimes.Count > 0 && listTimes.Min() < game;
+        }
+
         /// <summary>How old the oldest enabled list with a link is; null when none has a link.</summary>
         public static TimeSpan? OldestAge(SourcesConfig config, DateTime nowUtc)
         {

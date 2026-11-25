@@ -710,6 +710,9 @@ namespace DDV_SaveEditor_G
                 ItemIDTextBox.Text = selectedRow["ID"]?.ToString() ?? string.Empty;
                 ItemAmountTextBox.Text = "1";
             }
+            int count = ExcelDataGrid.SelectedItems.Count;
+            if (count > 1)
+                AddStatusText.Text = $"{count} items selected. Add item adds all of them; you will see their warnings first.";
         }
 
         /* =================================================================
@@ -1314,6 +1317,20 @@ namespace DDV_SaveEditor_G
         private bool ConfirmAdd(string id, string? extraWarning)
         {
             var row = ItemDatabase.Find(id);
+            var warnings = ItemWarnings(id, extraWarning);
+            if (warnings.Count == 0) return true;
+
+            string label = row == null ? id : $"{ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME")} ({id})";
+            return MessageBox.Show(
+                       $"{label}\n\n• {string.Join("\n• ", warnings)}\n\n" +
+                       "This item has warnings and may not work or may change the save unexpectedly. Add it anyway?",
+                       "Item Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+        }
+
+        /// <summary>Everything that speaks against adding an item; empty when the lists have no warnings.</summary>
+        private static List<string> ItemWarnings(string id, string? extraWarning)
+        {
+            var row = ItemDatabase.Find(id);
             var warnings = new List<string>();
 
             string? progressionWarning = ItemPlacement.GetRiskWarning(row);
@@ -1339,16 +1356,11 @@ namespace DDV_SaveEditor_G
             {
                 warnings.Add("The catalog does not recognize this as a supported inventory item type.");
             }
+            if (row != null && !ItemDatabase.IsCommunityChecked(row))
+                warnings.Add("Only in the game-file dump, not in the community list: it may be new, unfinished or a developer item that can break the game.");
             if (extraWarning != null)
                 warnings.Add(extraWarning);
-
-            if (warnings.Count == 0) return true;
-
-            string label = row == null ? id : $"{ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME")} ({id})";
-            return MessageBox.Show(
-                       $"{label}\n\n• {string.Join("\n• ", warnings)}\n\n" +
-                       "This item has warnings and may not work or may change the save unexpectedly. Add it anyway?",
-                       "Item Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+            return warnings;
         }
 
         // 1) Dodawanie nowego przedmiotu – trafia tam, gdzie trzyma go gra (ItemPlacement)
@@ -1374,8 +1386,23 @@ namespace DDV_SaveEditor_G
                 return;
             }
 
+            // Several catalog rows selected (Ctrl/Shift+click) and the ID box still shows one of them:
+            // add them all in one go.
+            var selected = SelectedCatalogIds();
+            if (selected.Count > 1 && selected.Contains(id))
+            {
+                AddSeveral(selected, amount);
+                return;
+            }
+
             AddById(id, amount);
         }
+
+        private List<long> SelectedCatalogIds() =>
+            ExcelDataGrid.SelectedItems.OfType<DataRowView>()
+                .Select(r => long.TryParse(r["ID"]?.ToString(), out long v) ? v : 0)
+                .Where(v => v > 0)
+                .ToList();
 
         /// <summary>
         /// Miejsce dla ID spoza bazy: nie wiemy, jak gra je rozumie, więc – po potwierdzeniu –
@@ -1441,6 +1468,41 @@ namespace DDV_SaveEditor_G
             if (!ConfirmAdd(idTxt, placement.Warning))
                 return;
 
+            var (added, extra) = ApplyAdd(id, amount, placement);
+
+            string name = ItemDatabase.Get(ItemDatabase.Find(idTxt), "LOCALIZED_DISPLAY_NAME", idTxt);
+            if (!added)
+            {
+                AddStatusText.Text = $"Not added: {name} → {placement.Label}{extra}";
+                return;
+            }
+
+            // gra odnotowuje zdobycie flagą w kolekcjach (zostaje też po sprzedaży)
+            int flags = ItemPlacement.MarkCollected(jsonData, id);
+            RefreshAfterAdd(placement.Kind);
+            var itemRow = ItemDatabase.Find(idTxt);
+            string safety = ItemDatabase.Get(itemRow, "SAFETY", "");
+            string risk = placement.Warning ?? (safety == "CAUTION"
+                ? "The catalog marks this item as CAUTION; its in-game result is uncertain."
+                : safety == "UNSAFE" ? "Added despite the UNSAFE warning." : "");
+            string riskSuffix = string.IsNullOrEmpty(risk) ? "" : $"\n⚠ {risk}";
+
+            AddStatusText.Text = $"Added: {name} ×{amount} → {placement.Label}{extra}" +
+                                 (flags > 0 ? $"; marked as collected in {flags} collection(s)" : "") +
+                                 ". Select Save Changes when you are ready." + riskSuffix;
+        }
+
+        private void RefreshAfterAdd(PlacementKind kind)
+        {
+            if (kind == PlacementKind.Mount) PopulateMounts();
+            if (kind == PlacementKind.Tool) PopulateTools();
+            if (kind == PlacementKind.DecorationPreset) PopulatePresets();
+        }
+
+        /// <summary>Puts one item where the game keeps it. No questions; the caller confirmed.</summary>
+        private (bool Added, string Extra) ApplyAdd(long id, int amount, Placement placement)
+        {
+            string idTxt = id.ToString();
             bool added;
             string extra = "";
             switch (placement.Kind)
@@ -1488,32 +1550,73 @@ namespace DDV_SaveEditor_G
                     added = false;
                     break;
             }
+            return (added, extra);
+        }
 
-            string name = ItemDatabase.Get(ItemDatabase.Find(idTxt), "LOCALIZED_DISPLAY_NAME", idTxt);
-            if (!added)
+        /// <summary>
+        /// Several rows selected in the catalog: one question for all of them. Items with warnings
+        /// can be left out in the same question; mounts and presets are added one at a time.
+        /// </summary>
+        private void AddSeveral(IReadOnlyList<long> ids, int amount)
+        {
+            var plan = new List<(long Id, Placement Placement, string Name, string? Warning)>();
+            var skipped = new List<string>();
+            foreach (long id in ids.Distinct())
             {
-                AddStatusText.Text = $"Not added: {name} → {placement.Label}{extra}";
+                string idTxt = id.ToString();
+                string name = ItemDatabase.Get(ItemDatabase.Find(idTxt), "LOCALIZED_DISPLAY_NAME", idTxt);
+                var placement = ItemPlacement.Resolve(jsonData, idTxt);
+                if (placement.Kind == PlacementKind.Unsupported || placement.Problem != null)
+                {
+                    skipped.Add($"{name}: {placement.Problem ?? "no supported place in the save"}");
+                    continue;
+                }
+                if (placement.Kind is PlacementKind.Mount or PlacementKind.DecorationPreset)
+                {
+                    skipped.Add($"{name}: add it on its own ({placement.Label} tab)");
+                    continue;
+                }
+                var warnings = ItemWarnings(idTxt, placement.Warning);
+                plan.Add((id, placement, name, warnings.Count > 0 ? warnings[0] : null));
+            }
+
+            if (plan.Count == 0)
+            {
+                MessageBox.Show("None of the selected items can be added:\n\n• " + string.Join("\n• ", skipped.Take(12)),
+                                "Add Items", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            // gra odnotowuje zdobycie flagą w kolekcjach (zostaje też po sprzedaży)
-            int flags = ItemPlacement.MarkCollected(jsonData, id);
-            if (placement.Kind == PlacementKind.Mount)
-                PopulateMounts();
-            if (placement.Kind == PlacementKind.Tool)
-                PopulateTools();
-            if (placement.Kind == PlacementKind.DecorationPreset)
-                PopulatePresets();
-            var itemRow = ItemDatabase.Find(idTxt);
-            string safety = ItemDatabase.Get(itemRow, "SAFETY", "");
-            string risk = placement.Warning ?? (safety == "CAUTION"
-                ? "The catalog marks this item as CAUTION; its in-game result is uncertain."
-                : safety == "UNSAFE" ? "Added despite the UNSAFE warning." : "");
-            string riskSuffix = string.IsNullOrEmpty(risk) ? "" : $"\n⚠ {risk}";
+            var risky = plan.Where(p => p.Warning != null).ToList();
+            var text = new System.Text.StringBuilder($"Add {plan.Count} selected items (amount {amount} where it applies)?");
+            if (skipped.Count > 0)
+                text.Append($"\n\nLeft out ({skipped.Count}):\n• " + string.Join("\n• ", skipped.Take(6)) +
+                            (skipped.Count > 6 ? $"\n… and {skipped.Count - 6} more" : ""));
+            MessageBoxResult answer;
+            if (risky.Count > 0)
+            {
+                text.Append($"\n\n{risky.Count} of them have warnings:\n• " +
+                            string.Join("\n• ", risky.Take(8).Select(r => $"{r.Name} - {r.Warning}")) +
+                            (risky.Count > 8 ? $"\n… and {risky.Count - 8} more" : ""));
+                text.Append($"\n\nYes - add all {plan.Count}\nNo - add only the {plan.Count - risky.Count} without warnings\nCancel - add nothing");
+                answer = MessageBox.Show(text.ToString(), "Add Items", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                if (answer == MessageBoxResult.Cancel) return;
+                if (answer == MessageBoxResult.No) plan = plan.Where(p => p.Warning == null).ToList();
+            }
+            else if (MessageBox.Show(text.ToString(), "Add Items", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+                return;
 
-            AddStatusText.Text = $"Added: {name} ×{amount} → {placement.Label}{extra}" +
-                                 (flags > 0 ? $"; marked as collected in {flags} collection(s)" : "") +
-                                 ". Select Save Changes when you are ready." + riskSuffix;
+            int added = 0;
+            var kinds = new HashSet<PlacementKind>();
+            foreach (var item in plan)
+            {
+                if (!ApplyAdd(item.Id, amount, item.Placement).Added) continue;
+                ItemPlacement.MarkCollected(jsonData, item.Id);
+                kinds.Add(item.Placement.Kind);
+                added++;
+            }
+            foreach (var kind in kinds) RefreshAfterAdd(kind);
+            AddStatusText.Text = $"Added {added} of {plan.Count} selected items. Select Save Changes when you are ready.";
         }
 
         // 2) Usuwanie zaznaczonego (Backpack / Pets / Clothes / Storage)

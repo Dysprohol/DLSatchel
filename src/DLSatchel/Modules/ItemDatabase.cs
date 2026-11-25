@@ -219,6 +219,18 @@ namespace DDV_SaveEditor_G.Modules
         public static string GetInternalName(DataRow? row)
             => row == null ? "?" : Get(row, "NAME", "—");
 
+        /// <summary>
+        /// Whether the community list (Rubyelf) knows the item: it is the only source with a
+        /// category, notes or catalogue category. Items only in the game-file dump can be new,
+        /// unfinished or developer items.
+        /// </summary>
+        public static bool IsCommunityChecked(DataRow? row)
+        {
+            if (row == null) return false;
+            if (Get(row, "CATEGORY", "").Length > 0 || Get(row, "NOTES", "").Length > 0) return true;
+            return long.TryParse(Get(row, "ID", ""), out long id) && !string.IsNullOrEmpty(FindRecord(id)?.CatalogueCategory);
+        }
+
         public static bool IsUnsafe(DataRow? row)
         {
             if (row == null) return false;

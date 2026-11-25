@@ -49,7 +49,8 @@ namespace DDV_SaveEditor_G
                 return;
             }
 
-            var dialog = new AddMissingDialog(label, missing) { Owner = this };
+            bool gameNewer = Data.ListUpdates.GameNewerThanLists(CurrentSources(), PresetLayouts.GameUpdatedUtc());
+            var dialog = new AddMissingDialog(label, missing, gameNewer) { Owner = this };
             if (dialog.ShowDialog() != true) return;
             var groups = dialog.SelectedGroups;
             var chosen = missing.Where(m => groups.Contains(m.Group)).ToList();

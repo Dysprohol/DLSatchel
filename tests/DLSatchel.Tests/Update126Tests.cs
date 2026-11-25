@@ -32,9 +32,16 @@ namespace DDV.SaveEditor.Tests
                 "51900000,MerTorso/99_NonIP!Update26!Pirate01,Bold Buccaneer,Clothing\n" +
                 "51800000,BodEar/99_NonIP!Update26!BasicMermaidEars01,Merfolk Ears,Clothing\n" +
                 "170500000,Boat/PirateShip01,Enchanted Pirate Ship,Skin\n" +
-                "40000001,Furniture/Chair,Chair,Furniture\n");
+                "170600005,House/MinnieHouse!CelebrationMinnieHouse,Minnie's Celebration House,Skin\n" +
+                "50000012,CloTop/99_NonIP!Update26!NewShirt,Brand New Shirt,Clothing\n" +
+                "40000001,Furniture/Chair,Chair,Furniture\n" +
+                "40000002,Blocker/InvisibleWall01,Invisible Wall,Furniture\n");
             string rubyelf = XlsxBuilder.WriteCsv(Path.Combine(directory, "rubyelf.csv"),
                 "Hex,Item ID,Name,Category,Notes,Catalogue Category\n" +
+                "0,50000001,Plain Shirt,Clothes Top,,\n" +
+                "0,50000002,Quest Shirt,Clothes Top,,\n" +
+                "0,170600005,Minnie's Celebration House,NPC Skin,,\n" +
+                "0,40000002,Invisible Wall,Furniture,,\n" +
                 "0,50000003,Shop Shirt,Clothes Top,,Premium\n" +
                 "0,50000004,Event Shirt,Clothes Top,Star Path,\n" +
                 "0,50000005,Broken Shirt,Clothes Top,DONT USE,\n" +
@@ -97,6 +104,15 @@ namespace DDV.SaveEditor.Tests
             Assert.False(missing.ContainsKey(50000005));   // DONT USE → unsafe
             Assert.Equal(MissingGroup.Other, missing[50000008]);   // "can bug" wins over Star Path
             Assert.Equal(MissingGroup.Other, missing[50000009]);   // Event! progression item, as a single add warns
+            Assert.Equal(MissingGroup.NotChecked, missing[50000012]);   // only in the game-file dump
+
+            var skins = MissingItems.Find(save, "7", new HashSet<long>()).ToDictionary(m => m.Id, m => m.Group);
+            Assert.Equal(MissingGroup.Skins, skins[170600005]);
+            var furniture = MissingItems.Find(save, "0", new HashSet<long>()).ToDictionary(m => m.Id, m => m.Group);
+            Assert.Equal(MissingGroup.Other, furniture[40000002]);      // world blocker
+            Assert.False(MissingItems.CheckedByDefault(MissingGroup.NotChecked));
+            Assert.False(MissingItems.CheckedByDefault(MissingGroup.Skins));
+            Assert.False(MissingItems.CheckedByDefault(MissingGroup.Unclear));
             Assert.Equal(MissingGroup.Dlc, missing[50000010]);
             Assert.Equal(MissingGroup.Shop, missing[50000011]);    // a premium Star Path reward is not a free event item
             Assert.False(missing.ContainsKey(50000006));   // owned
@@ -108,6 +124,37 @@ namespace DDV.SaveEditor.Tests
             Assert.False(MissingItems.CheckedByDefault(MissingGroup.Unlock));
             Assert.False(MissingItems.CheckedByDefault(MissingGroup.Shop));
             Assert.False(MissingItems.CheckedByDefault(MissingGroup.Dlc));
+        }
+
+        [Fact]
+        public void NewCompanion_GetsTheFullRecordTheGameStartsWith_PlusFieldsOfNewerVersions()
+        {
+            var existing = JArray.Parse("""[ { "PetItemID": 1, "FriendshipLevel": 3, "FriendshipXp": 50, "LastSelfieDate": null, "LastPettedDate": null, "GrantedInventorySlots": 0, "CustomName": "Bob", "PendingHangoutRewards": [], "CritterInteractions": [], "NewFieldFromAFutureUpdate": 7 } ]""");
+
+            var pet = PetModule.NewPetRecord(120100139, existing);
+
+            Assert.Equal(120100139L, (long)pet["PetItemID"]!);
+            Assert.Equal(1, (int)pet["FriendshipLevel"]!);
+            Assert.Equal(0, (int)pet["FriendshipXp"]!);
+            Assert.Equal(JTokenType.Null, pet["LastPettedDate"]!.Type);
+            Assert.Equal("", (string?)pet["CustomName"]);
+            Assert.Empty((JArray)pet["CritterInteractions"]!);
+            Assert.Equal(0, (int)pet["NewFieldFromAFutureUpdate"]!);   // copied with an empty value, not the other pet's
+        }
+
+        [Fact]
+        public void ListsOlderThanTheGame_AreNoticed()
+        {
+            string dir = XlsxBuilder.NewTempDirectory();
+            string list = XlsxBuilder.WriteCsv(Path.Combine(dir, "list.csv"), "ID,NAME\n1,A\n");
+            var config = new SourcesConfig
+            {
+                Sources = { new CatalogSourceConfig { Path = list, Enabled = true, UpdatedUtc = new System.DateTime(2026, 11, 10, 0, 0, 0, System.DateTimeKind.Utc) } }
+            };
+
+            Assert.True(ListUpdates.GameNewerThanLists(config, new System.DateTime(2026, 11, 18, 0, 0, 0, System.DateTimeKind.Utc)));
+            Assert.False(ListUpdates.GameNewerThanLists(config, new System.DateTime(2026, 11, 1, 0, 0, 0, System.DateTimeKind.Utc)));
+            Assert.False(ListUpdates.GameNewerThanLists(config, null));   // game not found
         }
 
         [Fact]

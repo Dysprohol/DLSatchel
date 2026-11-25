@@ -104,8 +104,8 @@ namespace DDV_SaveEditor_G.Modules
                         ? new Placement
                         {
                             Kind = PlacementKind.Pet,
-                            Label = "Companions",
-                            Warning = "Existing Player.Pets records in version 626 have additional progress and interaction fields. New entries currently contain only PetItemID; the full set of initial values has not been confirmed in-game. Add only to a backup save."
+                            Label = "Companions"
+                            // New companions get the full record the game itself starts with (PetModule.NewPetRecord).
                         }
                         : Unsupported($"Companion type \"{prefix}\" (such as Snippet) is not stored in Player.Pets and is not supported here.");
 

@@ -21,9 +21,10 @@ namespace DDV_SaveEditor_G
 
         private readonly List<GroupChoice> _groups;
 
-        public AddMissingDialog(string collection, IReadOnlyCollection<MissingItem> missing)
+        public AddMissingDialog(string collection, IReadOnlyCollection<MissingItem> missing, bool gameNewerThanLists = false)
         {
             InitializeComponent();
+            GameUpdateText.Visibility = gameNewerThanLists ? Visibility.Visible : Visibility.Collapsed;
             _groups = System.Enum.GetValues<MissingGroup>()
                 .Select(g => new GroupChoice
                 {

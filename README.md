@@ -44,6 +44,8 @@ handles that by itself. Before every save it makes a backup, so you can always g
 4. Click **Find Game Save** and choose your save.
 5. Type a name in **Item name**, click the item in the list, set **Amount** and click **Add item**
    (or just double click the item). The editor puts it in the right place by itself.
+   To add several at once, select them with **Ctrl** or **Shift** and click **Add item**.
+   Companions are added the same way and show up in the game's Companions menu.
 
    ![Finding and adding an item](docs/img/screen-add-item.png?v=1.4.1)
 
@@ -80,11 +82,18 @@ Most presets come from the shop. The ones the lists call "unreleased" are hidden
 ## Adding everything you're missing
 
 Open a collection on the right (for example **Wardrobe**) and click **Add all missing…**. The editor
-finds every item of that collection you don't have yet and lets you choose which kinds to add. Quest
-rewards, shop items and expansion or DLC items are left out unless you tick them. Things already
-placed in your valley count as yours, so you don't get them twice. Items marked unsafe, unreleased or test are never added.
+finds every item of that collection you don't have yet and lets you choose which kinds to add.
 
-![Adding everything you're missing](docs/img/screen-add-missing.png?v=1.4.1)
+Only ordinary items and event items are ticked at first. Everything else stays unticked until you
+tick it: quest rewards, shop items, expansion or DLC items, styles for houses and characters, and
+items the community list hasn't checked yet (new, unfinished or developer items from the game
+files). Things already placed in your valley count as yours, so you don't get them twice. Items
+marked unsafe, unreleased or test, and technical game objects, are never added.
+
+Nothing here is guaranteed. The lists are made by players and can be wrong, especially right after
+a game update. **Back up your save, add a little, check in the game, then add more.**
+
+![Adding everything you're missing](docs/img/screen-add-missing.png?v=1.5.0)
 
 ## Mermaid parts and ships
 
@@ -97,7 +106,9 @@ or the ship, the editor warns you when you add them.
 
 New items show up in the editor once the people who make the lists add them. When your lists are
 more than a week old, a gold line at the bottom says so - click **Update now**. **Check Save** offers
-the same when your save has items the lists don't know yet.
+the same when your save has items the lists don't know yet. When the game itself was updated after
+your lists, the gold line says so too: new items are not checked by anyone yet, so wait a few days
+or add carefully.
 
 ![Your item lists are 18 days old. Update now](docs/img/screen-lists-notice.png?v=1.4.1)
 
@@ -116,11 +127,12 @@ off the list and moves old copies the editor kept to the Recycle Bin.
 
 ## What the labels mean
 
-Every item in the list has a label in the **Safety** column:
+Every item in the list has a label in the **Safety** column. The labels only repeat what the lists
+say - they are not a guarantee:
 
 | Label | What it means |
 |---|---|
-| **SAFE** | A normal item. |
+| **NO WARNINGS** | The lists have no warnings about it. Still back up first. |
 | **CAUTION** (brown row) | A quest, event or shop item. Added too early, it can get a quest stuck. |
 | **UNSAFE** | Broken or a test item that can damage a save. Hidden unless you turn it on. |
 | **UNKNOWN** | The lists say too little about it. |

@@ -15,6 +15,8 @@ namespace DDV_SaveEditor_G.Modules
         Event,
         Quest,
         Unlock,
+        Skins,
+        NotChecked,
         Unclear,
         Other
     }
@@ -36,25 +38,29 @@ namespace DDV_SaveEditor_G.Modules
             MissingGroup.Event => "Event and Star Path items",
             MissingGroup.Quest => "Quest rewards",
             MissingGroup.Unlock => "Mermaid parts and ship skins",
+            MissingGroup.Skins => "Styles for houses, buildings and characters",
+            MissingGroup.NotChecked => "Not checked by the community yet",
             MissingGroup.Unclear => "Items the lists say little about",
             _ => "Items with other warnings"
         };
 
         public static string Description(MissingGroup group) => group switch
         {
-            MissingGroup.Ordinary => "Normal items with no warnings.",
+            MissingGroup.Ordinary => "Items the community list has no warnings about. That is not a guarantee - back up first.",
             MissingGroup.Shop => "Sold in the game's shop or in bundles, including premium Star Path rewards. Not ticked unless you choose them.",
             MissingGroup.Dlc => "Belong to an expansion or DLC. Tick them only if you own it - without it they may not show up or work.",
             MissingGroup.Event => "From events and Star Paths.",
             MissingGroup.Quest => "Given by quests. Having one too early can confuse a quest that is meant to give it.",
             MissingGroup.Unlock => "Used by the mermaid form or the ship the game unlocks in its story. Adding them before that is not confirmed in the game.",
+            MissingGroup.Skins => "A style only works for a house, building or character you already have. A style for something you don't have can break menus in the game.",
+            MissingGroup.NotChecked => "Only in the game-file dump, not in the community list: new items nobody has checked yet, unfinished or developer items. Some of them break the game.",
             MissingGroup.Unclear => "The lists give no type or notes, so they cannot be checked.",
             _ => "The lists mark them with a caution (for example \"can bug\" or \"careful\")."
         };
 
         /// <summary>Groups ticked when the dialog opens.</summary>
         public static bool CheckedByDefault(MissingGroup group) =>
-            group is MissingGroup.Ordinary or MissingGroup.Event or MissingGroup.Unclear;
+            group is MissingGroup.Ordinary or MissingGroup.Event;
 
         public static List<MissingItem> Find(JObject root, string listKey, ISet<long> owned)
         {
@@ -89,6 +95,11 @@ namespace DDV_SaveEditor_G.Modules
             if (placement.Warning != null)
                 return ItemPlacement.UnlockWarning(root, type, NamePrefix(name)) != null ? MissingGroup.Unlock : MissingGroup.Other;
 
+            // Technical objects the game places itself (world blockers, quest request items, terrain
+            // changes): never something to hand out in bulk.
+            if (TechnicalPrefixes.Contains(NamePrefix(name), StringComparer.OrdinalIgnoreCase))
+                return MissingGroup.Other;
+
             // Warnings first: an item marked "can bug" or "do not craft" must never ride along in a
             // ticked group just because it also comes from an event or the shop. These are the same
             // items a single Add item asks about.
@@ -96,6 +107,16 @@ namespace DDV_SaveEditor_G.Modules
                 return MissingGroup.Other;
             if (ItemPlacement.GetRiskWarning(row) != null)
                 return name.Contains("Mission!", StringComparison.OrdinalIgnoreCase) ? MissingGroup.Quest : MissingGroup.Other;
+
+            // The community list (Rubyelf) is the only source with category and notes. An item it does
+            // not have is only known from the game files: new, unfinished or a developer item. This
+            // follows every game update on its own - once the list adds an item, it leaves this group.
+            if (!ItemDatabase.IsCommunityChecked(row))
+                return MissingGroup.NotChecked;
+
+            // Styles depend on what stands in the player's world (houses, shops, villagers, mounts).
+            if (type.Equals("Skin", StringComparison.OrdinalIgnoreCase))
+                return MissingGroup.Skins;
 
             // Paid content first, so a premium Star Path reward is never offered as a free event item.
             if (ContainsAny(text, "DLC", "EXPANSION", "RIFT IN TIME", "STORYBOOK VALE") ||
@@ -113,11 +134,17 @@ namespace DDV_SaveEditor_G.Modules
 
             return ItemDatabase.Get(row, "SAFETY", "") switch
             {
-                "SAFE" => MissingGroup.Ordinary,
+                "NO WARNINGS" => MissingGroup.Ordinary,
                 "UNKNOWN" => MissingGroup.Unclear,
                 _ => MissingGroup.Other
             };
         }
+
+        /// <summary>Name prefixes of objects the game uses for its own world and quests.</summary>
+        private static readonly string[] TechnicalPrefixes =
+        {
+            "Blocker", "Request", "RequestItem", "GroundAlteration", "Mission", "Debug", "Dev", "Cheat"
+        };
 
         /// <summary>Notes that say the item itself can cause trouble (apostrophes removed).</summary>
         private static readonly string[] HardCautions =

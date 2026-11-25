@@ -69,6 +69,42 @@ namespace DDV_SaveEditor_G.Modules
         /// Kolekcje ruszamy tylko, gdy użytkownik faktycznie zmienił listę petów –
         /// inaczej błędne dopasowanie nazw w Excelu mogłoby wyzerować postęp kolekcji.
         /// </summary>
+        /// <summary>
+        /// A companion as the game itself creates it: friendship level 1, no XP, no dates,
+        /// no name, empty lists (219 of 220 companions in a well-played save look exactly like
+        /// this). Fields a newer game version adds to its own records are copied in with an
+        /// empty value of the same kind, so the record keeps up with future versions.
+        /// </summary>
+        internal static JObject NewPetRecord(long id, JArray? existing)
+        {
+            var record = new JObject
+            {
+                ["PetItemID"] = id,
+                ["FriendshipLevel"] = 1,
+                ["FriendshipXp"] = 0,
+                ["LastSelfieDate"] = JValue.CreateNull(),
+                ["LastPettedDate"] = JValue.CreateNull(),
+                ["GrantedInventorySlots"] = 0,
+                ["CustomName"] = "",
+                ["PendingHangoutRewards"] = new JArray(),
+                ["CritterInteractions"] = new JArray()
+            };
+
+            if (existing?.OfType<JObject>().FirstOrDefault() is JObject sample)
+                foreach (var field in sample.Properties().Where(p => !record.ContainsKey(p.Name)))
+                    record[field.Name] = field.Value.Type switch
+                    {
+                        JTokenType.Integer => 0,
+                        JTokenType.Float => 0.0,
+                        JTokenType.Boolean => false,
+                        JTokenType.String => "",
+                        JTokenType.Array => new JArray(),
+                        JTokenType.Object => new JObject(),
+                        _ => JValue.CreateNull()
+                    };
+            return record;
+        }
+
         public static void SavePets(JObject root, DataTable petTable, bool updateCollections)
         {
             Debug.WriteLine("[PetModule] SavePets START");
@@ -96,7 +132,7 @@ namespace DDV_SaveEditor_G.Modules
                 bool editable = row[EditableColumn] is bool value && value;
                 JToken saved = original != null && (!editable || originalId == id)
                     ? original.DeepClone()
-                    : new JObject { ["PetItemID"] = id };
+                    : NewPetRecord(id, player["Pets"] as JArray);
 
                 savedPets.Add(saved);
                 row[OriginalJsonColumn] = saved.ToString(Newtonsoft.Json.Formatting.None);

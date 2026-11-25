@@ -79,7 +79,7 @@ namespace DDV_SaveEditor_G.Data
         {
             SafetyState.Unsafe => "UNSAFE",
             SafetyState.Caution => "CAUTION",
-            SafetyState.Safe => "SAFE",
+            SafetyState.Safe => "NO WARNINGS",   // what the lists say, never a guarantee
             _ => "UNKNOWN"
         };
     }

@@ -165,7 +165,21 @@ namespace DDV_SaveEditor_G.Modules
         }
 
         /// <summary>Steam library folders holding the game, from the Steam registry key and libraryfolders.vdf.</summary>
-        private static IEnumerable<string> GameFolders()
+        /// <summary>
+        /// When the installed game was last updated (its FullVersion.txt), or null when the game is
+        /// not found. Used to tell the player that the item lists are older than the game.
+        /// </summary>
+        public static DateTime? GameUpdatedUtc()
+        {
+            foreach (string game in GameFolders())
+            {
+                string version = Path.Combine(game, "FullVersion.txt");
+                if (File.Exists(version)) return File.GetLastWriteTimeUtc(version);
+            }
+            return null;
+        }
+
+        internal static IEnumerable<string> GameFolders()
         {
             var libraries = new List<string>();
             try

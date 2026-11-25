@@ -40,7 +40,10 @@ namespace DDV_SaveEditor_G
             }
 
             var age = ListUpdates.OldestAge(config, DateTime.UtcNow);
-            if (age is TimeSpan old && old >= ListUpdates.StaleAfter)
+            if (ListUpdates.GameNewerThanLists(config, PresetLayouts.GameUpdatedUtc()))
+                ShowListsNotice("The game was updated after your item lists - new items are not checked yet. Back up before editing.",
+                                "Update now", offersDownload: false);
+            else if (age is TimeSpan old && old >= ListUpdates.StaleAfter)
                 ShowListsNotice($"Your item lists are {(int)old.TotalDays} days old.", "Update now", offersDownload: false);
             else
                 ListsNotice.Visibility = Visibility.Collapsed;
