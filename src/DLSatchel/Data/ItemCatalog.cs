@@ -158,7 +158,7 @@ namespace DDV_SaveEditor_G.Data
                 if (query.Kind is { } kind && record.Kind != kind) continue;
 
                 if (!query.IncludeUnsafe && record.Safety == SafetyState.Unsafe) continue;
-                if (query.SafeOnly && record.Safety != SafetyState.Safe) continue;
+                if (query.SafeOnly && record.Safety is not (SafetyState.Safe or SafetyState.Tested)) continue;
 
                 if (subtype != null &&
                     !TextNormalizer.FoldForSearch(record.Subtype).Contains(subtype, StringComparison.Ordinal))
@@ -476,7 +476,9 @@ namespace DDV_SaveEditor_G.Data
             TypeWasInferred = r.TypeWasInferred,
             SearchText = r.SearchText,
             IsTestItem = r.IsTestItem,
-            CatalogueCategory = r.CatalogueCategory
+            CatalogueCategory = r.CatalogueCategory,
+            Tested = r.Tested,
+            TestedOn = r.TestedOn
         };
 
         private static ItemRecord FromCached(CachedItemRecord c) => new()
@@ -504,6 +506,8 @@ namespace DDV_SaveEditor_G.Data
             Dlc = "",
             Image = "",
             CatalogueCategory = c.CatalogueCategory,
+            Tested = c.Tested,
+            TestedOn = c.TestedOn,
             Warnings = new List<string>(),
             Provenance = new Dictionary<string, SourceRef>(),
             TypeSource = ""

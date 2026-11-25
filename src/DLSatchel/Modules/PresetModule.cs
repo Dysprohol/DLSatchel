@@ -31,7 +31,7 @@ namespace DDV_SaveEditor_G.Modules
                 var layout = PresetLayouts.Get(id);
                 table.Rows.Add(
                     id,
-                    item == null ? "(not in catalog)" : ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME"),
+                    item == null ? "(not in your item lists)" : ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME"),
                     layout == null ? "?" : $"{layout.Pieces} pieces",
                     favorites.Contains(id) ? "Yes" : "No");
             }

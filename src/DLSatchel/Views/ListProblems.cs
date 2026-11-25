@@ -45,7 +45,7 @@ namespace DDV_SaveEditor_G
                 MessageBox.Show(owner,
                     "These lists could not be replaced because the file is in use (probably open in Excel):\n\n" +
                     string.Join("\n", locked.Select(r => "• " + r.FileName)) +
-                    "\n\nClose the file and click Update again. Your current lists are still used.",
+                    "\n\nClose it in Excel and try again. Your current lists are still used.",
                     "Item Lists", MessageBoxButton.OK, MessageBoxImage.Warning);
 
             foreach (var result in failed.Where(r => r.Problem is not (ListProblem.Offline or ListProblem.FileLocked)))

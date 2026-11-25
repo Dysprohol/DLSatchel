@@ -34,7 +34,7 @@ namespace DDV_SaveEditor_G.Modules
                 table.Rows.Add(
                     id,
                     name,
-                    item == null ? "(not in catalog)" : ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME"),
+                    item == null ? "(not in your item lists)" : ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME"),
                     accessory ? "Accessory" : "Tool",
                     tool["CurrentOfType"]?.Value<bool>() == true ? "Yes" : "No");
             }

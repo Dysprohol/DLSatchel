@@ -45,6 +45,10 @@ namespace DDV_SaveEditor_G.Data
         public string Image { get; set; } = "";
         public string CatalogueCategory { get; set; } = "";
 
+        /// <summary>From a tested-in-game list: "Works", "Broken" or "Careful" (empty when untested).</summary>
+        public string Tested { get; set; } = "";
+        public string TestedOn { get; set; } = "";
+
         public SafetyState Safety { get; set; }
 
         public List<string> Warnings { get; set; } = new();
@@ -80,6 +84,7 @@ namespace DDV_SaveEditor_G.Data
             SafetyState.Unsafe => "UNSAFE",
             SafetyState.Caution => "CAUTION",
             SafetyState.Safe => "NO WARNINGS",   // what the lists say, never a guarantee
+            SafetyState.Tested => "TESTED",       // someone tested it in the game; big updates can change that
             _ => "UNKNOWN"
         };
     }

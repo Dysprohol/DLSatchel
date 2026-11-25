@@ -9,6 +9,7 @@ namespace DDV_SaveEditor_G.Modules
     /// <summary>How an item the player does not have yet is offered by "Add all missing".</summary>
     public enum MissingGroup
     {
+        Tested,
         Ordinary,
         Shop,
         Dlc,
@@ -32,6 +33,7 @@ namespace DDV_SaveEditor_G.Modules
     {
         public static string Label(MissingGroup group) => group switch
         {
+            MissingGroup.Tested => "Tested in the game",
             MissingGroup.Ordinary => "Ordinary items",
             MissingGroup.Shop => "Shop and Premium items",
             MissingGroup.Dlc => "Expansion and DLC items",
@@ -46,21 +48,22 @@ namespace DDV_SaveEditor_G.Modules
 
         public static string Description(MissingGroup group) => group switch
         {
-            MissingGroup.Ordinary => "Items the community list has no warnings about. That is not a guarantee - back up first.",
-            MissingGroup.Shop => "Sold in the game's shop or in bundles, including premium Star Path rewards. Not ticked unless you choose them.",
+            MissingGroup.Tested => "Players tried them in the game and they worked. A big game update can change that.",
+            MissingGroup.Ordinary => "Items the lists have no warnings about.",
+            MissingGroup.Shop => "Sold in the game's shop or in bundles, including premium Star Path rewards.",
             MissingGroup.Dlc => "Belong to an expansion or DLC. Tick them only if you own it - without it they may not show up or work.",
             MissingGroup.Event => "From events and Star Paths.",
             MissingGroup.Quest => "Given by quests. Having one too early can confuse a quest that is meant to give it.",
-            MissingGroup.Unlock => "Used by the mermaid form or the ship the game unlocks in its story. Adding them before that is not confirmed in the game.",
+            MissingGroup.Unlock => "Used by the mermaid form or the ship the game unlocks in its story. Adding them before that isn't tested.",
             MissingGroup.Skins => "A style only works for a house, building or character you already have. A style for something you don't have can break menus in the game.",
-            MissingGroup.NotChecked => "Only in the game-file dump, not in the community list: new items nobody has checked yet, unfinished or developer items. Some of them break the game.",
+            MissingGroup.NotChecked => "Not in the community list: new items nobody has checked yet, or unfinished or developer items. Some of them break the game.",
             MissingGroup.Unclear => "The lists give no type or notes, so they cannot be checked.",
             _ => "The lists mark them with a caution (for example \"can bug\" or \"careful\")."
         };
 
         /// <summary>Groups ticked when the dialog opens.</summary>
         public static bool CheckedByDefault(MissingGroup group) =>
-            group is MissingGroup.Ordinary or MissingGroup.Event;
+            group is MissingGroup.Tested or MissingGroup.Ordinary or MissingGroup.Event;
 
         public static List<MissingItem> Find(JObject root, string listKey, ISet<long> owned)
         {
@@ -99,6 +102,10 @@ namespace DDV_SaveEditor_G.Modules
             // changes): never something to hand out in bulk.
             if (TechnicalPrefixes.Contains(NamePrefix(name), StringComparer.OrdinalIgnoreCase))
                 return MissingGroup.Other;
+
+            // Someone tried it in the game and it worked: that beats every guess below.
+            if (ItemDatabase.Get(row, "SAFETY", "") == "TESTED")
+                return MissingGroup.Tested;
 
             // Warnings first: an item marked "can bug" or "do not craft" must never ride along in a
             // ticked group just because it also comes from an event or the shop. These are the same
@@ -141,7 +148,7 @@ namespace DDV_SaveEditor_G.Modules
         }
 
         /// <summary>Name prefixes of objects the game uses for its own world and quests.</summary>
-        private static readonly string[] TechnicalPrefixes =
+        internal static readonly string[] TechnicalPrefixes =
         {
             "Blocker", "Request", "RequestItem", "GroundAlteration", "Mission", "Debug", "Dev", "Cheat"
         };
@@ -156,7 +163,7 @@ namespace DDV_SaveEditor_G.Modules
         private static bool ContainsAny(string text, params string[] words) =>
             words.Any(w => text.Contains(w, StringComparison.Ordinal));
 
-        private static string NamePrefix(string name)
+        internal static string NamePrefix(string name)
         {
             int slash = name.IndexOf('/');
             return slash > 0 ? name[..slash] : name;

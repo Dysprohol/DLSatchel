@@ -174,20 +174,20 @@
                             <CheckBox Name="HideCautionCheckBox"
                                       IsChecked="False"
                                       Checked="HideCaution_Changed" Unchecked="HideCaution_Changed"
-                                      ToolTip="Hide catalog entries marked CAUTION; this is separate from risky or unfinished items."
+                                      ToolTip="Hide items marked CAUTION."
                                       Margin="0,0,0,6">
                                 <TextBlock Text="Hide caution items" TextWrapping="Wrap"/>
                             </CheckBox>
                             <CheckBox Name="HideTestCheckBox"
                                       IsChecked="True"
                                       Checked="HideTest_Changed" Unchecked="HideTest_Changed"
-                                      ToolTip="Hide developer test assets such as Feet_Test, TestAsset or items noted 'TEST ITEM'. Real items like 'Ink Blot Test' stay visible."
+                                      ToolTip="Hide the developers' test items. Real items with &quot;Test&quot; in the name stay visible."
                                       Margin="0,0,0,6">
                                 <TextBlock Text="Hide test items" TextWrapping="Wrap"/>
                             </CheckBox>
                             <CheckBox Name="HighlightOwnershipCheckBox" IsEnabled="False"
                                       Checked="HighlightOwnership_Changed" Unchecked="HighlightOwnership_Changed"
-                                      ToolTip="Teal rows are present in the profile; blue rows are not. Reads player inventories and collection flags only. Character containers are not inspected.">
+                                      ToolTip="Teal: you have it. Blue: you don't. Items given to characters are not counted.">
                                 <TextBlock Text="Highlight owned / missing" TextWrapping="Wrap"/>
                             </CheckBox>
                         </StackPanel>
@@ -224,7 +224,7 @@
                                 </StackPanel>
                                 <Button Grid.Column="2" Name="AddItemButton" Content="Add item" MinWidth="100"
                                         Height="32" Margin="2,16,4,0" Click="AddItemButton_Click"
-                                        ToolTip="Add the selected item ID to its game-defined collection"/>
+                                        ToolTip="Add the selected item where the game keeps it"/>
                                 <Button Grid.Column="3" Name="RemoveSelectedButton" Content="Remove selected"
                                         MinWidth="120" Height="32" Margin="4,16,4,0"
                                         Click="RemoveItemButton_Click" Style="{StaticResource DangerButton}"
@@ -236,7 +236,7 @@
                     </Border>
                     <!-- Destination and safety note for the last added item -->
                     <TextBlock Name="AddStatusText" Margin="0,0,0,0" TextWrapping="Wrap" Foreground="{StaticResource DreamlightMint}"
-                               Text="Select an item from the catalog to see where it will go. Items are routed using the game's save rules."/>
+                               Text="Pick an item and click Add item. The editor puts it where the game keeps it."/>
                 </StackPanel>
             </GroupBox>
         </Grid>
@@ -252,7 +252,7 @@
                 <GroupBox.Header>
                     <StackPanel Orientation="Horizontal">
                         <Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="20" Height="20" Margin="0,0,7,0"/>
-                        <TextBlock Text="Item Catalog" VerticalAlignment="Center"/>
+                        <TextBlock Text="All Items" VerticalAlignment="Center"/>
                     </StackPanel>
                 </GroupBox.Header>
                 <DataGrid
@@ -279,12 +279,12 @@
                         <DataGridTextColumn Header="Category"
                                     Binding="{Binding CATEGORY}"
                                     Width="Auto"/>
-                        <DataGridTextColumn x:Name="OwnershipColumn" Header="Save"
+                        <DataGridTextColumn x:Name="OwnershipColumn" Header="Owned"
                                     Binding="{Binding OWNED_STATUS}"
                                     Width="90" Visibility="Collapsed"/>
                         <DataGridTextColumn Header="Safety"
                                     Binding="{Binding SAFETY}"
-                                    Width="78"/>
+                                    Width="104"/>
                         <DataGridTextColumn Header="Notes"
                                     Binding="{Binding NOTES}"
                                     Width="*"/>
@@ -469,7 +469,7 @@
                             </Grid.RowDefinitions>
                             <TextBlock Name="MountsStatusText" Grid.Row="0" Margin="4,2,4,6" TextWrapping="Wrap"
                                        Foreground="{StaticResource DreamlightMint}"
-                                       Text="Experimental mount additions are available through Find &amp; Add Items. New records contain only MountItemID; use a separate backup copy because bond and customization defaults are unverified."/>
+                                       Text="Load a save to see your mounts. Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy."/>
                             <DataGrid Name="MountsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
                                       CanUserAddRows="False" ScrollViewer.VerticalScrollBarVisibility="Auto"
                                       ScrollViewer.HorizontalScrollBarVisibility="Auto">
@@ -568,17 +568,19 @@
         <!-- Buttons Section -->
         <StackPanel Grid.Row="3" Margin="0,10,0,0">
             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Width="150" MinHeight="38" Margin="5" Click="LoadExcel_Click" ToolTip="Choose one or more catalog files; replaces the catalogs loaded now"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Item Catalog"/></StackPanel></Button>
-                <Button Width="150" MinHeight="38" Margin="5" Click="AddCatalog_Click" ToolTip="Add another catalog (e.g. Rubyelf next to the KOSDDV dump); both are merged by priority"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="+ Add Catalog"/></StackPanel></Button>
+                <Button Width="150" MinHeight="38" Margin="5" Click="LoadExcel_Click" ToolTip="Choose item list files. They replace the lists you use now."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Item Lists…"/></StackPanel></Button>
+                <Button Width="150" MinHeight="38" Margin="5" Click="AddCatalog_Click" ToolTip="Add another item list file next to the ones you use."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="+ Add List"/></StackPanel></Button>
                 <Button Width="150" MinHeight="38" Margin="5" Click="SaveChanges_Click" Style="{StaticResource AccentButton}" ToolTip="Review and write your edits to the selected save"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/logo.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Save Changes"/></StackPanel></Button>
-                <Button Width="190" MinHeight="38" Margin="5" Click="OpenFile_Click" ToolTip="Open a profile.json save from a location you choose"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Open Save…"/></StackPanel></Button>
+                <Button Width="190" MinHeight="38" Margin="5" Click="OpenFile_Click" ToolTip="Open a save file from any folder"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Open Save…"/></StackPanel></Button>
                 <Button Width="190" MinHeight="38" Margin="5" Click="AutoDetectSave_Click" ToolTip="Find saves in the usual game folders"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Find Game Save"/></StackPanel></Button>
-                <Button Width="135" MinHeight="38" Margin="5" Name="ValidateSaveButton" IsEnabled="False" Click="ValidateSave_Click" ToolTip="Check known item locations without changing the save"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Check Save"/></StackPanel></Button>
-                <Button Width="145" MinHeight="38" Margin="5" Click="CompareSaves_Click" ToolTip="Compare two profiles without changing either one"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Compare Saves"/></StackPanel></Button>
-                <Button Width="110" MinHeight="38" Margin="5" Click="Sources_Click" ToolTip="Manage item catalog files, priorities and reports"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Sources…"/></StackPanel></Button>
+                <Button Width="135" MinHeight="38" Margin="5" Name="ValidateSaveButton" IsEnabled="False" Click="ValidateSave_Click" ToolTip="Look for problems in your save. Nothing is changed."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Check Save"/></StackPanel></Button>
+                <Button Width="165" MinHeight="38" Margin="5" Name="RestoreBackupButton" IsEnabled="False" Click="RestoreBackup_Click" ToolTip="Go back to a copy the editor made before saving"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Restore Backup…"/></StackPanel></Button>
+                <Button Width="135" MinHeight="38" Margin="5" Click="CopyReport_Click" ToolTip="Copy versions and counts for a bug report. No personal data."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Copy Report"/></StackPanel></Button>
+                <Button Width="145" MinHeight="38" Margin="5" Click="CompareSaves_Click" ToolTip="Compare two save files. Nothing is changed."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Compare Saves"/></StackPanel></Button>
+                <Button Width="110" MinHeight="38" Margin="5" Click="Sources_Click" ToolTip="Update, add or remove your item lists"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Sources…"/></StackPanel></Button>
             </WrapPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
-                <TextBlock Name="DbStatusText" Foreground="{StaticResource MutedStarlight}" Text="Item catalog not loaded"/>
+                <TextBlock Name="DbStatusText" Foreground="{StaticResource MutedStarlight}" Text="No item lists loaded"/>
                 <TextBlock Name="ListsNotice" Margin="14,0,0,0" Foreground="{StaticResource DreamlightGold}" Visibility="Collapsed">
                     <Run Name="ListsNoticeText"/>
                     <Hyperlink Name="ListsNoticeLink" Click="ListsNotice_Click" Foreground="{StaticResource DreamlightGold}"

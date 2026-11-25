@@ -45,7 +45,7 @@ namespace DDV_SaveEditor_G
                 config = SourcesConfigStore.LoadOrCreate(SourcesConfigStore.ResolvePath(null), saveWhenCreated: false);
             var diag = catalog?.Diagnostics ?? ItemCatalog.Empty.Diagnostics;
 
-            TxtSummary.Text = $"Total: {diag.TotalRecords:N0} records | Missing NAME: {diag.TotalRecords - diag.RecordsWithInternalName:N0} | Unsafe: {diag.UnsafeRecords:N0} | Caution: {diag.CautionRecords:N0} | Load: {diag.LoadMs:F0} ms {(diag.FromCache ? "(cache)" : "")}";
+            TxtSummary.Text = $"Items: {diag.TotalRecords:N0} | No internal name: {diag.TotalRecords - diag.RecordsWithInternalName:N0} | UNSAFE: {diag.UnsafeRecords:N0} | CAUTION: {diag.CautionRecords:N0}";
 
             foreach (var source in config.Sources)
             {
@@ -92,10 +92,10 @@ namespace DDV_SaveEditor_G
         }
 
         private async void BtnAddFile_Click(object sender, RoutedEventArgs e)
-            => await PickAndLoadAsync("Add Item Catalogs", replaceCurrent: false);
+            => await PickAndLoadAsync("Add Item Lists", replaceCurrent: false);
 
         private async void BtnReplaceFile_Click(object sender, RoutedEventArgs e)
-            => await PickAndLoadAsync("Use Only These Item Catalogs", replaceCurrent: true);
+            => await PickAndLoadAsync("Use Only These Item Lists", replaceCurrent: true);
 
         private async Task PickAndLoadAsync(string title, bool replaceCurrent)
         {
@@ -113,7 +113,7 @@ namespace DDV_SaveEditor_G
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading item catalog: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"The item list could not be read: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             await RefreshAsync();
         }
@@ -190,7 +190,7 @@ namespace DDV_SaveEditor_G
             config.Sources.RemoveAll(s => plan.Remove.Contains(s));
             try
             {
-                SetBusy(true, "Reloading the item catalog…");
+                SetBusy(true, "Reloading the item lists…");
                 await ItemDatabase.LoadFromConfigAsync(config);
             }
             finally
@@ -259,7 +259,7 @@ namespace DDV_SaveEditor_G
             {
                 SetBusy(false);
                 MessageBox.Show(this, $"Something went wrong: {ex.Message}\n\nYour save and your lists were not changed by this step.",
-                                "Item Catalog Sources", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                "Sources", MessageBoxButton.OK, MessageBoxImage.Warning);
                 try { await RefreshAsync(); } catch (Exception) { /* keep the window usable */ }
             }
         }
@@ -291,7 +291,7 @@ namespace DDV_SaveEditor_G
                 SetBusy(true);
                 results = await ListUpdates.UpdateAllAsync(config, CurrentItemCount,
                     new Progress<string>(text => TxtSummary.Text = text));
-                SetBusy(true, "Reloading the item catalog…");
+                SetBusy(true, "Reloading the item lists…");
                 await ItemDatabase.LoadFromConfigAsync(config);   // also keeps the links in sources.json
             }
             finally
@@ -309,7 +309,7 @@ namespace DDV_SaveEditor_G
             {
                 try
                 {
-                    SetBusy(true, "Reloading the item catalog…");
+                    SetBusy(true, "Reloading the item lists…");
                     await ItemDatabase.LoadFromConfigAsync(config);
                 }
                 finally { SetBusy(false); }
@@ -350,7 +350,7 @@ namespace DDV_SaveEditor_G
                     existing.NoLink = false;
                     existing.UpdatedUtc = DateTime.UtcNow;
 
-                    SetBusy(true, "Reloading the item catalog…");
+                    SetBusy(true, "Reloading the item lists…");
                     await ItemDatabase.LoadFromConfigAsync(config);
                 }
             }
@@ -361,8 +361,8 @@ namespace DDV_SaveEditor_G
             await RefreshAsync();
 
             if (result.Updated)
-                MessageBox.Show($"{result.FileName}: {result.Message}\n\nThe list is now used by the catalog. " +
-                                "Update from links downloads it again later.",
+                MessageBox.Show($"{result.FileName}: {result.Message}\n\nThe list is now in use. " +
+                                "Update from links gets a fresh copy later.",
                                 "Add from link", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show($"The list was not added: {result.Message}", "Add from link",

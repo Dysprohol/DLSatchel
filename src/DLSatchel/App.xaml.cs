@@ -17,7 +17,7 @@ namespace DDV_SaveEditor_G
             this.DispatcherUnhandledException += (s, args) =>
             {
                 Debug.WriteLine($"UNHANDLED: {args.Exception}");
-                MessageBox.Show($"Unhandled exception: {args.Exception.Message}\n\n{args.Exception.StackTrace}", "Crash", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Something went wrong: {args.Exception.Message}\n\nDetails:\n{args.Exception.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 args.Handled = true;
                 Shutdown(-1);
             };
@@ -25,7 +25,7 @@ namespace DDV_SaveEditor_G
             {
                 var ex = args.ExceptionObject as Exception;
                 Debug.WriteLine($"DOMAIN UNHANDLED: {ex}");
-                MessageBox.Show($"Domain unhandled: {ex?.Message}\n\n{ex?.StackTrace}", "Crash", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Something went wrong: {ex?.Message}\n\nDetails:\n{ex?.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             };
         }
     }

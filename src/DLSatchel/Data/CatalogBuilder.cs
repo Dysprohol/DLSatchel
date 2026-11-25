@@ -420,6 +420,9 @@ namespace DDV_SaveEditor_G.Data
             int dlcColumn = Column(header, CatalogField.Dlc);
             int imageColumn = Column(header, CatalogField.Image);
             int catalogueColumn = Column(header, CatalogField.CatalogueCategory);
+            int testedColumn = Column(header, CatalogField.Tested);
+            int testedOnColumn = Column(header, CatalogField.TestedOn);
+            int testerNotesColumn = Column(header, CatalogField.TesterNotes);
 
             bool nameIsDisplay = header.NameIsDisplay;
 
@@ -559,6 +562,9 @@ namespace DDV_SaveEditor_G.Data
                 MergeSimple(CatalogField.Dlc, dlcColumn);
                 MergeSimple(CatalogField.Image, imageColumn);
                 MergeSimple(CatalogField.CatalogueCategory, catalogueColumn);
+                MergeSimple(CatalogField.Tested, testedColumn);
+                MergeSimple(CatalogField.TestedOn, testedOnColumn);
+                MergeSimple(CatalogField.TesterNotes, testerNotesColumn);
 
                 void MergeSimple(string field, int column)
                 {
@@ -835,6 +841,9 @@ namespace DDV_SaveEditor_G.Data
                 string patch = Get(source, CatalogField.Patch);
                 string dlc = Get(source, CatalogField.Dlc);
                 string image = Get(source, CatalogField.Image);
+                string tested = NormalizeTestResult(Get(source, CatalogField.Tested));
+                string testedOn = Get(source, CatalogField.TestedOn);
+                string testerNotes = Get(source, CatalogField.TesterNotes);
 
                 // Rubyelf lists Gameloft decoration presets with an empty Name and the
                 // preset's name in Notes ("Haunted Mansion Wall Preset"); a few rows also miss
@@ -885,7 +894,22 @@ namespace DDV_SaveEditor_G.Data
                     subtypeSource = "";
                 }
 
+                // A tested-in-game list overrides the guesses above: it is the only source that
+                // says what actually happened in the game. It is still not a guarantee.
+                string testedWhen = testedOn.Length > 0 ? $" ({testedOn})" : "";
+                string testerSays = testerNotes.Length > 0 ? $": {testerNotes}" : "";
+                string testNote = tested switch
+                {
+                    "Broken" => $"Tested in the game{testedWhen}: does not work{testerSays}",
+                    "Careful" => $"Tested in the game{testedWhen}: works, with care{testerSays}",
+                    _ => ""
+                };
+                if (tested == "Broken") safety = SafetyState.Unsafe;
+                else if (tested == "Careful" && safety != SafetyState.Unsafe) safety = SafetyState.Caution;
+                else if (tested == "Works" && !_taxonomy.IsTestItem(name, display, category, notes)) safety = SafetyState.Tested;
+
                 var warnings = new List<string>(source.Warnings);
+                if (testNote.Length > 0) warnings.Add(testNote);
                 if (name.Length == 0)
                     warnings.Add("No internal NAME – only the display name is known, so the game's storage type cannot be checked.");
                 if (typeInferred)
@@ -894,9 +918,9 @@ namespace DDV_SaveEditor_G.Data
                     warnings.Add($"TYPE '{type}' is not a known inventory item.");
                 if (type.Length == 0 && category.Length == 0)
                     warnings.Add("Neither TYPE nor Category is known.");
-                if (safety == SafetyState.Unsafe)
+                if (safety == SafetyState.Unsafe && tested != "Broken")
                     warnings.Add($"Marked UNSAFE by the source: {FirstNonEmpty(notes, category, catalogue)}");
-                if (safety == SafetyState.Caution)
+                if (safety == SafetyState.Caution && tested != "Careful")
                     warnings.Add($"Marked CAUTION by the source: {FirstNonEmpty(notes, category, catalogue)}");
 
                 string searchText = TextNormalizer.FoldForSearch(
@@ -920,6 +944,8 @@ namespace DDV_SaveEditor_G.Data
                     Dlc = dlc,
                     Image = image,
                     CatalogueCategory = catalogue,
+                    Tested = tested,
+                    TestedOn = testedOn,
                     Safety = safety,
                     Warnings = warnings,
                     Placement = placement,
@@ -941,6 +967,23 @@ namespace DDV_SaveEditor_G.Data
 
         private static string FirstNonEmpty(params string?[] values)
             => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v)) ?? "";
+
+        /// <summary>
+        /// "Works" / "Broken" / "Careful" from whatever a tester typed ("yes", "ok", "crash", "✔", …).
+        /// Anything unclear counts as untested rather than as a promise.
+        /// </summary>
+        internal static string NormalizeTestResult(string value)
+        {
+            string v = value.Trim().ToLowerInvariant();
+            if (v.Length == 0) return "";
+            if (v is "✔" or "✓" or "y" or "yes" or "ok" or "works" or "working" or "work" or "good" or "tak" or "działa" or "dziala")
+                return "Works";
+            if (v.StartsWith("broken") || v.StartsWith("crash") || v.StartsWith("bug") || v is "no" or "✘" or "✗" or "x" or "nie" or "doesn't work" or "does not work")
+                return "Broken";
+            if (v.StartsWith("careful") || v.StartsWith("caution") || v.StartsWith("partly") || v.StartsWith("ostroż") || v.StartsWith("ostroz"))
+                return "Careful";
+            return "";
+        }
 
         /* =================================================================
          *  Sheet classification helpers

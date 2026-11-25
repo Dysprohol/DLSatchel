@@ -62,7 +62,7 @@ namespace DDV_SaveEditor_G.Modules
             string prefix = NamePrefix(name);
 
             if (row == null)
-                return Unsupported("Unknown ID — its in-game location is not known. Choose a destination section manually.");
+                return Unsupported("This ID is not in your item lists. Open the tab it belongs to and try again.");
 
             // Held accessories (umbrellas, parasols, balloons…) live in Player.Tools like the
             // shovel or the rod. Rubyelf lists newer ones under "Accessory" before a dump gives
@@ -75,7 +75,7 @@ namespace DDV_SaveEditor_G.Modules
             if (ItemDatabase.Get(row, "KIND", "") == nameof(Data.ItemKind.DecorationPreset))
                 return PresetList(root) != null
                     ? new Placement { Kind = PlacementKind.DecorationPreset, Label = "Presets" }
-                    : Unsupported("This save has no Player.PremadeDecorationPresets list, so a preset cannot be added safely.");
+                    : Unsupported("This save has no preset list yet, so presets can't be added.");
 
             switch (type)
             {
@@ -96,9 +96,9 @@ namespace DDV_SaveEditor_G.Modules
                             {
                                 Kind = PlacementKind.Mount,
                                 Label = "Mounts",
-                                Warning = "EXPERIMENTAL: this adds only MountItemID to Player.Mounts. Initial bond, upgrade, and customization defaults are unverified. Test on a separate backup copy; the mount may not unlock or may not load correctly."
+                                Warning = "Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy."
                             }
-                            : Unsupported("This save has no Player.Mounts array, so a mount cannot be added safely.");
+                            : Unsupported("This save has no mounts yet, so mounts can't be added.");
 
                     return prefix is "Pet" or "Critter"
                         ? new Placement
@@ -107,13 +107,13 @@ namespace DDV_SaveEditor_G.Modules
                             Label = "Companions"
                             // New companions get the full record the game itself starts with (PetModule.NewPetRecord).
                         }
-                        : Unsupported($"Companion type \"{prefix}\" (such as Snippet) is not stored in Player.Pets and is not supported here.");
+                        : Unsupported("This kind of companion can't be added by the editor.");
 
                 case "Currency":
                     return new Placement { Kind = PlacementKind.Currency, Label = "Currency" };
 
                 case "Tool":
-                    return new Placement { Kind = PlacementKind.Tool, Label = "Tools" };
+                    return new Placement { Kind = PlacementKind.Tool, Label = "Tools & Accessories" };
 
                 case "ActivityData" when prefix == "CookingRecipe":
                     return new Placement { Kind = PlacementKind.CookingRecipe, Label = "Cookbook" };
@@ -125,30 +125,33 @@ namespace DDV_SaveEditor_G.Modules
                     // Player.MemoryShards = { ID: maska zebranych kawałków } (wartości 1, 2, 4 … 938) – liczby kawałków nie znamy
                     return Unsupported("MemoryShards stores collected memory fragments as a bit mask. Editing this format is not supported.");
 
+                case "Character":
+                    return Unsupported("This is a character. Characters join your valley through the story; the editor can't add them.");
+
                 case "Upgrade":
-                    return Unsupported("Tool upgrades are stored per tool in Player.ToolUpgrades. Editing this format is not supported.");
+                    return Unsupported("Tool upgrades can't be added by the editor.");
             }
 
             // A save may contain a reserved ListInventory even for a game-object
             // type that the catalog explicitly marks as non-inventory (for example
             // Environment). A matching empty container alone must not make an ID addable.
             if (string.Equals(ItemDatabase.Get(row, "PLACEMENT", "None"), "None", StringComparison.OrdinalIgnoreCase))
-                return Unsupported($"Type \"{type}\" is marked as non-inventory in the catalog. A matching save container alone is not enough to route it safely.");
+                return Unsupported($"The item lists say this is not something you can own ({type}), so it can't be added.");
 
             // magazyny ListInventories wg CompatibleItemType
             var matchingLists = (root["Player"]?["ListInventories"] as JObject)?.Properties()
                 .Where(p => p.Value["CompatibleItemType"]?.ToString() == ListInventoryModule.ItemTypePrefix + type)
                 .ToList() ?? new List<JProperty>();
             if (matchingLists.Count > 1)
-                return Unsupported($"Multiple collections were found for type \"{type}\". The correct destination is ambiguous.");
+                return Unsupported($"Your save has more than one place for {type} items, so the editor can't tell which to use.");
 
             var li = matchingLists.FirstOrDefault();
             if (li != null)
             {
                 if (!ListInventoryModule.IsEditableType(type))
-                    return Unsupported($"Collection type \"{type}\" does not have a verified editing rule in this version.");
+                    return Unsupported($"The editor can't add {ListInventoryModule.DisplayName(type)} items yet.");
 
-                string label = type == "Clothing" ? "Clothes" : $"Storage → {type}";
+                string label = ListInventoryModule.DisplayName(type);
                 string? problem = CheckSubtype(li.Value, "CompatibleFurnitureTypes", "FurnitureItemType_", prefix, name)
                                ?? CheckSubtype(li.Value, "CompatibleBuildingTypes", "BuildingItemType_", prefix, name);
                 bool restricted = li.Value["CompatibleFurnitureTypes"] != null || li.Value["CompatibleBuildingTypes"] != null;
@@ -156,16 +159,16 @@ namespace DDV_SaveEditor_G.Modules
                 {
                     Kind = PlacementKind.ListInventory, ListKey = li.Name, Label = label, Problem = problem,
                     Warning = type == "Furniture" && prefix == "Landscaping"
-                        ? "This path is mapped to FurnitureItemType_GroundAlteration based on the save structure, but adding it has not yet been confirmed in-game. Keep a backup save."
+                        ? "Landscaping items haven't been tested in the game yet. Keep a backup save."
                         : restricted && name.Length == 0
-                            ? "This item appears only in the Rubyelf list and has no internal name, so its subtype cannot be checked against the collection rules."
+                            ? "Only Rubyelf's ID list has this item, so the editor can't check that it fits here."
                             : UnlockWarning(root, type, prefix)
                 };
             }
 
             return Unsupported(type.Length == 0
-                ? "The catalog has no item type for this ID, so its in-game location is unknown."
-                : $"Type \"{type}\" is not an inventory item; the game stores it elsewhere or does not store it as an owned item.");
+                ? "The item lists don't say what this item is, so the editor doesn't know where it goes."
+                : $"This is not an item you can own ({type}), so it can't be added.");
         }
 
         /// <summary>
@@ -178,7 +181,7 @@ namespace DDV_SaveEditor_G.Modules
             if (constraint == null || name.Length == 0)
                 return null;   // brak ograniczenia albo brak NAME (przedmiot tylko z listy Rubyelf)
             if (constraint["List"] is not JArray allowed)
-                return $"The collection has a {field} restriction, but its allowed types could not be read.";
+                return "The editor can't read which items fit here, so it won't add this one.";
 
             // Game item names use the `Landscaping/` namespace for paths, while
             // ListInventories declares those same items as GroundAlteration.
@@ -190,8 +193,7 @@ namespace DDV_SaveEditor_G.Modules
             string subtype = typePrefix + subtypeName;
             return allowed.Any(a => a.ToString() == subtype)
                 ? null
-                : $"This collection only accepts: {string.Join(", ", allowed.Select(a => a.ToString().Replace(typePrefix, "")))}; " +
-                  $"this item is type \"{prefix}\" and the game will not accept it here.";
+                : $"This item ({prefix}) doesn't fit here; the game won't accept it.";
         }
 
         public static string? GetRiskWarning(DataRow? row)
@@ -215,10 +217,10 @@ namespace DDV_SaveEditor_G.Modules
             if (doNotCraft || characterHouse || progression)
             {
                 var reasons = new List<string>();
-                if (doNotCraft) reasons.Add("the catalog marks it Do Not Craft");
-                if (characterHouse) reasons.Add("it appears to be a character home/house item");
-                if (progression) reasons.Add("it is Mission/Event/Character progression content");
-                return $"Caution: {string.Join("; ", reasons)}. It may be tied to quests, placement, or game state and can cause bugs or damage the save. Add only if you accept that risk and have a separate backup.";
+                if (doNotCraft) reasons.Add("the item lists say \"do not craft\"");
+                if (characterHouse) reasons.Add("it belongs to a character's house");
+                if (progression) reasons.Add("it is part of a quest, event or character story");
+                return $"Caution: {string.Join("; ", reasons)}. It can get a quest stuck or damage the save. Back up first.";
             }
             return null;
         }
@@ -241,8 +243,8 @@ namespace DDV_SaveEditor_G.Modules
                                 player?["MaleMermaidAvatar"]?.Type is JTokenType.Object;
                 return unlocked
                     ? null
-                    : "Mermaid part: it is worn in the mermaid form, which the game unlocks in its story. " +
-                      "This save has no mermaid form yet. The part should wait in the wardrobe, but that is not confirmed in the game. Keep a backup save.";
+                    : "Mermaid part: worn in the mermaid form, which this save doesn't have yet. " +
+                      "It should wait in your wardrobe, but this isn't tested. Keep a backup.";
             }
 
             if (type == "Skin" && prefix.Equals("Boat", StringComparison.OrdinalIgnoreCase))
@@ -250,8 +252,8 @@ namespace DDV_SaveEditor_G.Modules
                 bool unlocked = root["World"]?["BoatData"]?.Type is JTokenType.Object;
                 return unlocked
                     ? null
-                    : "Ship skin: it is used by the ship the game unlocks in its story. " +
-                      "This save has no ship yet. The skin should wait in your collection, but that is not confirmed in the game. Keep a backup save.";
+                    : "Ship skin: used by the ship, which this save doesn't have yet. " +
+                      "It should wait with your skins, but this isn't tested. Keep a backup.";
             }
 
             return null;

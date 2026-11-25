@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DDV_SaveEditor_G"
         mc:Ignorable="d"
-        Title="Item Catalog Sources" Height="600" Width="1180"
+        Title="Sources" Height="600" Width="1180"
         Icon="/DLSatchel;component/Assets/Icons/logo.png"
         Background="{StaticResource WindowBackground}" Foreground="{StaticResource Starlight}"
         FontFamily="Segoe UI" FontSize="13"
@@ -26,9 +26,9 @@
         <!-- Toolbar -->
         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,36">
             <Button x:Name="BtnAddFile" Content="＋ Add Excel" Click="BtnAddFile_Click" Margin="0,0,8,0" Padding="8,4"
-                    ToolTip="Add catalogs next to the enabled ones; they are merged by priority (lower number wins)"/>
+                    ToolTip="Add Excel files of item lists. If two lists disagree, the lower Priority number wins."/>
             <Button x:Name="BtnReplaceFile" Content="Use Only…" Click="BtnReplaceFile_Click" Margin="0,0,8,0" Padding="8,4"
-                    ToolTip="Choose catalogs and disable all others"/>
+                    ToolTip="Choose item list files and switch off all others"/>
             <Button x:Name="BtnAddLink" Content="＋ Add from link…" Click="BtnAddLink_Click" Margin="0,0,8,0" Padding="8,4"
                     ToolTip="Download an item list from a Google Sheets link and add it"/>
             <Button x:Name="BtnUpdateLinks" Content="⇩ Update from links" Click="BtnUpdateLinks_Click" Margin="0,0,8,0" Padding="8,4"

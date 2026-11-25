@@ -1,0 +1,4 @@
+Item ID,Item,Tested,Tested on,Tester notes
+40000001,Example chair,Works,2026-11-25 (game update of Nov 2026),
+40000002,Example lamp,Broken,2026-11-25,the game freezes when it is placed
+40000003,Example table,Careful,2026-11-25,works only after its quest

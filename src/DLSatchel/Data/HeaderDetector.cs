@@ -19,6 +19,11 @@ namespace DDV_SaveEditor_G.Data
         public const string Dlc = "DLC";
         public const string Image = "IMAGE";
         public const string CatalogueCategory = "CATALOGUE";
+        /// <summary>Result of an in-game test: "Works", "Broken" or "Careful".</summary>
+        public const string Tested = "TESTED";
+        /// <summary>When or on which game version that test was done.</summary>
+        public const string TestedOn = "TESTEDON";
+        public const string TesterNotes = "TESTERNOTES";
     }
 
     public sealed class HeaderResult
@@ -167,6 +172,9 @@ namespace DDV_SaveEditor_G.Data
             MapField(CatalogField.Dlc, "DLC");
             MapField(CatalogField.Image, "IMAGE", "ICON");
             MapField(CatalogField.CatalogueCategory, "CATALOGUECATEGORY");
+            MapField(CatalogField.Tested, "TESTED", "TESTEDINGAME", "TESTRESULT");
+            MapField(CatalogField.TestedOn, "TESTEDON", "TESTDATE");
+            MapField(CatalogField.TesterNotes, "TESTERNOTES", "TESTNOTES");
 
             void MapField(string field, params string[] aliases)
             {
@@ -299,6 +307,9 @@ namespace DDV_SaveEditor_G.Data
             Add(CatalogField.Dlc, "DLC");
             Add(CatalogField.Image, "Image", "Icon");
             Add(CatalogField.CatalogueCategory, "Catalogue Category");
+            Add(CatalogField.Tested, "Tested", "Tested in game", "Test result");
+            Add(CatalogField.TestedOn, "Tested on", "Test date");
+            Add(CatalogField.TesterNotes, "Tester notes", "Test notes");
 
             return map;
         }

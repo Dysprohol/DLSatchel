@@ -28,9 +28,9 @@
         </ItemsControl>
         <TextBlock x:Name="GameUpdateText" TextWrapping="Wrap" Margin="0,4,0,8" Foreground="{StaticResource DreamlightGold}"
                    Visibility="Collapsed"
-                   Text="The game was updated after your item lists. Update the lists first (Update now at the bottom of the window), and add only a little at a time after a big update."/>
+                   Text="The game was updated after your item lists. Click Update now at the bottom of the window first, then add only a little at a time."/>
         <TextBlock TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{StaticResource MutedStarlight}" FontSize="12"
-                   Text="Nothing here is guaranteed: the lists can be wrong, especially right after a game update. Back up your save, add a little, check in the game, then add more. Items already placed in your valley count as yours. Never added: items marked unsafe or unreleased, and test items. Nothing is saved until you click Save Changes."/>
+                   Text="The lists can be wrong, especially after a game update. Back up your save, add a little, check in the game, then add more. Items placed in your valley count as yours. UNSAFE, unreleased and test items are never added. Nothing is saved until you click Save Changes."/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
             <Button x:Name="OkButton" Click="Ok_Click" Padding="14,5" Margin="0,0,8,0"
                     IsDefault="True" Style="{StaticResource AccentButton}"/>

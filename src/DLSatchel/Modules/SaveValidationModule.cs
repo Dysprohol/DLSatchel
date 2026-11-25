@@ -21,7 +21,7 @@ namespace DDV_SaveEditor_G.Modules
             var issues = new List<SaveValidationIssue>();
             if (root["Player"] is not JObject player)
             {
-                issues.Add(new() { Level = SaveIssueLevel.Error, Path = "Player", Message = "Player object is missing." });
+                issues.Add(new() { Level = SaveIssueLevel.Error, Path = "Player", Message = "This file has no player data. It may not be a save, or it is damaged." });
                 return issues;
             }
 
@@ -34,7 +34,7 @@ namespace DDV_SaveEditor_G.Modules
                     {
                         if (!long.TryParse(item.Name, out long id))
                         {
-                            issues.Add(new() { Level = SaveIssueLevel.Caution, Path = $"Player.ListInventories.{list.Name}.Inventory.{item.Name}", Message = "Item key is not a numeric ID." });
+                            issues.Add(new() { Level = SaveIssueLevel.Caution, Path = $"Player.ListInventories.{list.Name}.Inventory.{item.Name}", Message = "An item here has an ID that is not a number. The game may not read it." });
                             continue;
                         }
                         CheckItem(root, id, PlacementKind.ListInventory, list.Name,
@@ -66,12 +66,12 @@ namespace DDV_SaveEditor_G.Modules
                     long id = ReadId(pets[i]?.Type == JTokenType.Object ? pets[i]?["PetItemID"] : pets[i]);
                     if (id <= 0)
                     {
-                        issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = "PetItemID is not recognized. The record will be preserved unchanged." });
+                        issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = "This companion has no valid ID. It is left as it is." });
                         continue;
                     }
 
                     if (!seenPets.Add(id))
-                        issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"Duplicate PetItemID record: {id}." });
+                        issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"Companion {id} is in the save twice." });
 
                     CheckItem(root, id, PlacementKind.Pet, null, path, issues);
 
@@ -83,7 +83,7 @@ namespace DDV_SaveEditor_G.Modules
                         {
                             Level = SaveIssueLevel.Caution,
                             Path = path,
-                            Message = "This companion record has fewer fields than observed records in a version 626 profile. Verify its defaults and completeness in-game."
+                            Message = "This companion is missing some of its data. Check it in the game."
                         });
                     }
                 }
@@ -96,7 +96,7 @@ namespace DDV_SaveEditor_G.Modules
                     string path = $"Player.CurrencyAmounts.{currency.Name}";
                     if (!long.TryParse(currency.Name, out long id))
                     {
-                        issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = "Currency key is not a numeric ID." });
+                        issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = "A currency here has an ID that is not a number." });
                         continue;
                     }
                     CheckItem(root, id, PlacementKind.Currency, null, path, issues);
@@ -110,10 +110,6 @@ namespace DDV_SaveEditor_G.Modules
                 PlacementKind.CraftingRecipe, "Player.UnlockedCraftingRecipes", issues);
 
             InspectMounts(player, issues);
-            AddComplexAreaNote(player, "MemoryShards", "Player.MemoryShards", "Values are memory progress masks; the meaning of individual bits must be confirmed before editing.", issues);
-            AddComplexAreaNote(player, "ToolUpgrades", "Player.ToolUpgrades", "Upgrades are grouped by tool and may require a matching EvolveProgressState.", issues);
-            AddComplexAreaNote(player, "EvolveStatesProfile", "Player.EvolveStatesProfile", "Progress for evolving tools is not editable yet.", issues);
-            AddComplexAreaNote(player, "AssignedPets", "Player.AssignedPets", "Assigned companion slots were found, but their meaning needs further verification.", issues);
 
             return issues;
         }
@@ -124,7 +120,7 @@ namespace DDV_SaveEditor_G.Modules
             var row = ItemDatabase.Find(id);
             if (row == null)
             {
-                issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"ID {id} is not in the current catalog; its in-game location is unknown." });
+                issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"ID {id} is not in your item lists, so it can't be checked." });
                 return;
             }
 
@@ -138,7 +134,7 @@ namespace DDV_SaveEditor_G.Modules
             bool matches = actual.Kind == expected &&
                            (expected != PlacementKind.ListInventory || actual.ListKey == listKey);
             if (!matches)
-                issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"ID {id} appears to be in the wrong save location. The catalog points to: {actual.Label}." });
+                issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"ID {id} is in the wrong place. It belongs in {actual.Label}." });
             else if (!string.IsNullOrWhiteSpace(actual.Warning))
                 issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = $"ID {id}: {actual.Warning}" });
         }
@@ -157,7 +153,7 @@ namespace DDV_SaveEditor_G.Modules
             {
                 Level = SaveIssueLevel.Info,
                 Path = path,
-                Message = $"Found {count} record(s). {message}"
+                Message = $"{message} ({count:N0} found)"
             });
         }
 
@@ -171,13 +167,13 @@ namespace DDV_SaveEditor_G.Modules
                 long id = ReadId(mounts[i]?["MountItemID"]);
                 if (id <= 0)
                 {
-                    issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = "MountItemID is missing or invalid; review this record manually." });
+                    issues.Add(new() { Level = SaveIssueLevel.Caution, Path = path, Message = "A mount here has no valid ID. The game may not read it." });
                     continue;
                 }
 
                 var row = id > 0 ? ItemDatabase.Find(id) : null;
                 string name = row == null
-                    ? "wpis nieznany w katalogu"
+                    ? "unknown mount"
                     : ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME", ItemDatabase.Get(row, "NAME", id.ToString()));
                 string rawType = ItemDatabase.Get(row, "TYPE", "");
                 string internalName = ItemDatabase.Get(row, "NAME", "");
@@ -189,7 +185,7 @@ namespace DDV_SaveEditor_G.Modules
 
                 if (!seen.Add(id))
                 {
-                    issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"Duplicate mount record: {name} (ID {id})." });
+                    issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"Mount {name} ({id}) is in the save twice." });
                     continue;
                 }
 
@@ -199,12 +195,12 @@ namespace DDV_SaveEditor_G.Modules
                     Level = row == null || (isMount && minimalRecord) ? SaveIssueLevel.Caution : isMount ? SaveIssueLevel.Info : SaveIssueLevel.Error,
                     Path = path,
                     Message = row == null
-                        ? $"Mount ID {id} is not in the catalog. {progress}Bond, upgrade, and customization editing are not supported yet."
+                        ? $"Mount {id} is not in your item lists. {progress}"
                         : !isMount
-                            ? $"ID {id} ({name}) is not classified as Companion/Mount in the catalog. Review this record before saving."
+                            ? $"{name} ({id}) is with your mounts, but the item lists say it is not a mount."
                             : minimalRecord
-                                ? $"Mount {name} (ID {id}) has only MountItemID. This experimental record has no verified bond, upgrade, or customization defaults; test it in game only on a backup copy."
-                                : $"Mount {name} (ID {id}). {progress}Bond, upgrade, and customization editing are not supported yet."
+                                ? $"Mount {name} ({id}) was added by the editor and has no bond or look settings yet. Check it in the game; keep a backup."
+                                : $"Mount {name} ({id}). {progress}"
                 });
             }
         }
@@ -219,7 +215,7 @@ namespace DDV_SaveEditor_G.Modules
                 string itemPath = $"{path}[{i}]";
                 if (id <= 0)
                 {
-                    issues.Add(new() { Level = SaveIssueLevel.Caution, Path = itemPath, Message = $"Missing or invalid ID ({idProperty})." });
+                    issues.Add(new() { Level = SaveIssueLevel.Caution, Path = itemPath, Message = "An entry here has no valid ID." });
                     continue;
                 }
                 CheckItem(root, id, expected, null, itemPath, issues);
@@ -236,7 +232,7 @@ namespace DDV_SaveEditor_G.Modules
                 string itemPath = $"{path}[{i}]";
                 if (id <= 0)
                 {
-                    issues.Add(new() { Level = SaveIssueLevel.Caution, Path = itemPath, Message = "Missing or invalid recipe ID." });
+                    issues.Add(new() { Level = SaveIssueLevel.Caution, Path = itemPath, Message = "A recipe here has no valid ID." });
                     continue;
                 }
                 CheckItem(root, id, expected, null, itemPath, issues);

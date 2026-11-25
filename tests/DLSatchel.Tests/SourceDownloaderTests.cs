@@ -243,7 +243,7 @@ namespace DDV.SaveEditor.Tests
 
             var unknown = SaveItemIds.NotInCatalog(save);
 
-            Assert.Equal(new[] { (40099999L, "Storage: Furniture"), (1108999999L, "Tools & accessories") },
+            Assert.Equal(new[] { (40099999L, "Furniture"), (1108999999L, "Tools & Accessories") },
                          unknown.OrderBy(u => u.Id).ToArray());
         }
 

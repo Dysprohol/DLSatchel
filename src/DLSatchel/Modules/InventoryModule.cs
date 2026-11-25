@@ -81,7 +81,7 @@ namespace DDV_SaveEditor_G.Modules
 
             var dbRow = ItemDatabase.Find(id);
             row["NAME"] = ItemDatabase.GetInternalName(dbRow);
-            row["LOCALIZED_DISPLAY_NAME"] = dbRow == null ? "(not in catalog)" : ItemDatabase.Get(dbRow, "LOCALIZED_DISPLAY_NAME");
+            row["LOCALIZED_DISPLAY_NAME"] = dbRow == null ? "(not in your item lists)" : ItemDatabase.Get(dbRow, "LOCALIZED_DISPLAY_NAME");
             row["Category"] = ItemDatabase.GetCategory(dbRow);
         }
 

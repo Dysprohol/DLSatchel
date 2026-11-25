@@ -34,7 +34,9 @@ namespace DDV_SaveEditor_G.Data
         Unknown = 0,
         Safe,
         Caution,
-        Unsafe
+        Unsafe,
+        /// <summary>A list made by players who test items in the game says it works. Still not a guarantee.</summary>
+        Tested
     }
 
     /// <summary>Where the game stores the item. Advisory only – save writing stays in ItemPlacement.</summary>

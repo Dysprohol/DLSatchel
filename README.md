@@ -12,7 +12,7 @@ Add items, clothes, furniture, companions and coins to your save on PC.
 <a href="https://ko-fi.com/Dysprohol"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white"></a>
 </p>
 
-![The editor with a save open](docs/img/screen-overview.png?v=1.4.1)
+![The editor with a save open](docs/img/screen-overview.png?v=1.5.1)
 
 Your whole game is kept in one file on your PC. DL Satchel opens that file and shows it as simple
 lists. You pick what you want, click **Save Changes**, start the game - and it is there.
@@ -39,20 +39,19 @@ handles that by itself. Before every save it makes a backup, so you can always g
 1. **Close the game.**
 2. Start `DLSatchel.exe`. If Windows warns you, click **More info > Run anyway**.
 3. The first time, the editor asks to download the item lists - click **Yes**. That's all; it
-   remembers them. (Already have the Excel files? Click **Item Catalog** and **+ Add Catalog** and
-   pick them instead.)
+   remembers them. (Already have the Excel files? Click **+ Add List** and pick them instead.)
 4. Click **Find Game Save** and choose your save.
 5. Type a name in **Item name**, click the item in the list, set **Amount** and click **Add item**
    (or just double click the item). The editor puts it in the right place by itself.
    To add several at once, select them with **Ctrl** or **Shift** and click **Add item**.
    Companions are added the same way and show up in the game's Companions menu.
 
-   ![Finding and adding an item](docs/img/screen-add-item.png?v=1.4.1)
+   ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.1)
 
 6. To remove something, open a collection on the right (for example **Furniture**), select it and
    click **Remove selected**. Coins and level are at the top left.
 
-   ![Your furniture](docs/img/screen-collection.png?v=1.4.1)
+   ![Your furniture](docs/img/screen-collection.png?v=1.5.1)
 
 7. Click **Save Changes**. The editor shows what will change (for example "Backpack") and asks you
    to confirm. Then start the game.
@@ -63,12 +62,11 @@ Things your character holds - umbrellas, parasols and the like - are **not cloth
 them together with your tools. Open the **Tools & Accessories** tab, find the item and click
 **Add item**. It is added unequipped, so you pick it in the game.
 
-![Tools and accessories](docs/img/screen-tools.png?v=1.4.1)
+![Tools and accessories](docs/img/screen-tools.png?v=1.5.1)
 
 ## Decoration presets
 
-Ready-made decoration sets (for example "Knight Castle Preset" or "Haunted Mansion Wall
-Preset") are on the **Presets** tab. Pick one and click **Add item** - after saving, it shows up in
+Ready-made decoration sets (for example a castle or a haunted house) are on the **Presets** tab. Pick one and click **Add item** - after saving, it shows up in
 the game's preset menu.
 
 A preset can only be placed if you own its furniture. When you add one, the editor shows which
@@ -77,7 +75,7 @@ pieces you are missing and can add them to your furniture storage in one go.
 Most presets come from the shop. The ones the lists call "unreleased" are hidden at first: untick
 **Hide risky or unfinished items** to see them.
 
-![Decoration presets](docs/img/screen-presets-furniture.png?v=1.4.1)
+![Decoration presets](docs/img/screen-presets-furniture.png?v=1.5.1)
 
 ## Adding everything you're missing
 
@@ -93,11 +91,11 @@ marked unsafe, unreleased or test, and technical game objects, are never added.
 Nothing here is guaranteed. The lists are made by players and can be wrong, especially right after
 a game update. **Back up your save, add a little, check in the game, then add more.**
 
-![Adding everything you're missing](docs/img/screen-add-missing.png?v=1.5.0)
+![Adding everything you're missing](docs/img/screen-add-missing.png?v=1.5.1)
 
 ## Mermaid parts and ships
 
-The latest game update added mermaid tails, fins and ears, and ship skins. They go to your wardrobe and
+A game update added mermaid tails, fins and ears, and ship skins. They go to your wardrobe and
 skins like any other item, but you can wear and use them only after the game unlocks the mermaid
 form and the ship in its story. They are marked **CAUTION**, and until your save has the mermaid form
 or the ship, the editor warns you when you add them.
@@ -132,10 +130,22 @@ say - they are not a guarantee:
 
 | Label | What it means |
 |---|---|
+| **TESTED** | Someone tried it in the game and it worked (only with a tested list, see below). A big game update can change that. |
 | **NO WARNINGS** | The lists have no warnings about it. Still back up first. |
 | **CAUTION** (brown row) | A quest, event or shop item. Added too early, it can get a quest stuck. |
 | **UNSAFE** | Broken or a test item that can damage a save. Hidden unless you turn it on. |
 | **UNKNOWN** | The lists say too little about it. |
+
+### A list of items tested in the game
+
+Players who test items can keep their own list: a sheet with the columns **Item ID**, **Item**,
+**Tested** (Works, Broken or Careful), **Tested on** and **Tester notes** - see
+[the template](docs/tested-list-template.csv). Add it in **Sources…** like any other list. "Works"
+shows as **TESTED** and is ticked in **Add all missing**, "Broken" counts as **UNSAFE**, and the
+tester's notes show up as a warning when you add the item.
+
+No list is a guarantee - not the community lists, not a tested one. A game update can break what
+worked before.
 
 ## Updates
 
@@ -145,14 +155,30 @@ every time. The editor only goes online when you click something (updates or ite
 
 ## Going back
 
-Next to your save the editor keeps two kinds of copies:
+Every time you click **Save Changes**, the editor first copies your save. To go back:
 
-- `profile.json.bak` - your save from before the first change,
-- `profile.json.backup-<date>` - a copy from before every save.
+1. Close the game.
+2. Open your save in the editor and click **Restore Backup…**. You see how many copies there are and
+   when each was made. "Before your first edit" is your save as it was before the editor changed
+   anything.
+3. Pick a copy and click **Restore**. Your current save is copied first, so you can undo this the
+   same way.
 
-To go back: close the game and rename the copy you want to `profile.json`. The copies are in the
-same folder as your save - the game keeps it under `%USERPROFILE%\AppData\LocalLow` (paste that into
-File Explorer and open the game's folder).
+**Check Save** also lists items with warnings that were added since your first copy and can take
+just those out again.
+
+The copies sit next to your save (`profile.json.bak` and `profile.json.backup-<date>`); **Open
+folder** in the same window shows them.
+
+## Found a problem?
+
+Tell us - that is how the editor gets better. Post in
+[the forum thread](https://fearlessrevolution.com/viewtopic.php?f=23&t=29455) or, if you know how,
+open an [issue on GitHub](https://github.com/Dysprohol/DLSatchel/issues).
+
+Click **Copy Report** in the editor and paste it into your post: it lists the versions and your item
+lists (nothing personal). Then add what you did, what you expected and what happened instead. A
+screenshot helps too.
 
 ## Support
 

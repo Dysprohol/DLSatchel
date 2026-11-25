@@ -124,14 +124,14 @@ namespace DDV_SaveEditor_G.Updates
 
             var info = new FileInfo(target);
             if (release.ExeSize > 0 && info.Length != release.ExeSize)
-                throw new InvalidDataException($"The download has {info.Length} bytes, GitHub lists {release.ExeSize}.");
+                throw new InvalidDataException("The download is incomplete or damaged.");
 
             if (release.Sha256 != null)
             {
                 await using var check = File.OpenRead(target);
                 string hash = Convert.ToHexString(await SHA256.HashDataAsync(check, cancellationToken).ConfigureAwait(false));
                 if (!string.Equals(hash, release.Sha256, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidDataException("The download's SHA-256 does not match the release.");
+                    throw new InvalidDataException("The download is incomplete or damaged.");
             }
 
             return target;

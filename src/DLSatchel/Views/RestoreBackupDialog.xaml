@@ -1,0 +1,25 @@
+<Window x:Class="DDV_SaveEditor_G.RestoreBackupDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Restore Backup"
+        Icon="/DLSatchel;component/Assets/Icons/logo.png"
+        Background="{StaticResource WindowBackground}" Foreground="{StaticResource Starlight}"
+        FontFamily="Segoe UI" FontSize="13"
+        Width="560" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <StackPanel Margin="16">
+        <TextBlock x:Name="SummaryText" TextWrapping="Wrap" Margin="0,0,0,6" FontWeight="SemiBold"/>
+        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Foreground="{StaticResource MutedStarlight}"
+                   Text="The editor makes a copy every time you click Save Changes. &quot;Before your first edit&quot; is your save as it was before the editor changed anything. Close the game, pick a copy and click Restore. Your current save is copied first, so you can undo this here."/>
+        <ListBox x:Name="BackupList" Height="220" DisplayMemberPath="Label" SelectionChanged="BackupList_SelectionChanged"/>
+        <DockPanel Margin="0,12,0,0">
+            <Button Content="Open folder" Click="OpenFolder_Click" Padding="14,5" DockPanel.Dock="Left"
+                    ToolTip="Show the copies in File Explorer"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="OkButton" Content="Restore" Click="Ok_Click" Padding="14,5" Margin="0,0,8,0"
+                    IsDefault="True" IsEnabled="False" Style="{StaticResource AccentButton}"/>
+            <Button Content="Cancel" IsCancel="True" Padding="14,5"/>
+        </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

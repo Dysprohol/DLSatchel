@@ -67,7 +67,7 @@ namespace DDV_SaveEditor_G.Modules
         internal static bool TryDecode(string path, out JObject json, out bool encrypted)
             => TryDecode(path, out json, out encrypted, out _);
 
-        private static bool TryDecode(string path, out JObject json, out bool encrypted, out string jsonTxt)
+        internal static bool TryDecode(string path, out JObject json, out bool encrypted, out string jsonTxt)
         {
             json = null!;
             encrypted = false;
@@ -166,7 +166,7 @@ namespace DDV_SaveEditor_G.Modules
             return backupPath;
         }
 
-        private static string CreateTimestampedBackup(string originalPath)
+        internal static string CreateTimestampedBackup(string originalPath)
         {
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
             for (int suffix = 0; ; suffix++)
@@ -211,7 +211,7 @@ namespace DDV_SaveEditor_G.Modules
                     verifiedEncrypted != expectedEncrypted ||
                     !JToken.DeepEquals(expectedJson, verifiedJson))
                 {
-                    throw new InvalidDataException("The staged save failed JSON/encryption round-trip validation.");
+                    throw new InvalidDataException("The editor could not check the new save, so nothing was written.");
                 }
 
                 if (File.Exists(fullPath))

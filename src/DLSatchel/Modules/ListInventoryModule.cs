@@ -110,7 +110,7 @@ namespace DDV_SaveEditor_G.Modules
             var dbRow = ItemDatabase.Find(Convert.ToInt64(row["Item ID"]));
             string containerType = row.Table.ExtendedProperties[ContainerTypeProperty] as string ?? "?";
             row["Name"] = ItemDatabase.GetInternalName(dbRow);
-            row["Localized Name"] = dbRow == null ? "(not in catalog)" : ItemDatabase.Get(dbRow, "LOCALIZED_DISPLAY_NAME");
+            row["Localized Name"] = dbRow == null ? "(not in your item lists)" : ItemDatabase.Get(dbRow, "LOCALIZED_DISPLAY_NAME");
             row["Category"] = ItemDatabase.GetCategory(dbRow, containerType);
         }
 

@@ -75,41 +75,41 @@ namespace DDV_SaveEditor_G
                 string configPath = SourcesConfigStore.ResolvePath(null);
                 if (!File.Exists(configPath))
                 {
-                    DbStatusText.Text = "Choose an item catalog with Item Catalog or Sources… to begin.";
+                    DbStatusText.Text = "Add your item lists to begin (Sources…).";
                     return true;
                 }
 
                 var config = SourcesConfigStore.LoadOrCreate(configPath, saveWhenCreated: false);
                 if (config.Sources.Any(source => source.Enabled))
                 {
-                    DbStatusText.Text = "Loading your selected item catalogs…";
+                    DbStatusText.Text = "Loading your item lists…";
                     await LoadConfiguredDatabaseAsync(config, showErrors: false);
                 }
                 else
                 {
-                    DbStatusText.Text = "Choose an item catalog with Item Catalog or Sources… to begin.";
+                    DbStatusText.Text = "Add your item lists to begin (Sources…).";
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                DbStatusText.Text = "Could not load your configured item catalog.";
+                DbStatusText.Text = "Your item lists could not be loaded.";
                 System.Diagnostics.Debug.WriteLine($"Catalog startup load failed: {ex}");
             }
             return false;
         }
 
         private void LoadExcel_Click(object sender, RoutedEventArgs e)
-            => PickCatalogFiles("Choose Item Catalogs (replaces the current ones)", replaceCurrent: true);
+            => PickCatalogFiles("Choose Item Lists (replaces the current ones)", replaceCurrent: true);
 
         private void AddCatalog_Click(object sender, RoutedEventArgs e)
-            => PickCatalogFiles("Add Item Catalogs to the current ones", replaceCurrent: false);
+            => PickCatalogFiles("Add Item Lists", replaceCurrent: false);
 
         private void PickCatalogFiles(string title, bool replaceCurrent)
         {
             var openFileDialog = new OpenFileDialog
             {
-                Filter = "Item catalogs (*.xlsx;*.xlsm;*.csv;*.tsv)|*.xlsx;*.xlsm;*.csv;*.tsv|All files (*.*)|*.*",
+                Filter = "Item lists (*.xlsx;*.xlsm;*.csv;*.tsv)|*.xlsx;*.xlsm;*.csv;*.tsv|All files (*.*)|*.*",
                 Title = title,
                 Multiselect = true
             };
@@ -138,8 +138,8 @@ namespace DDV_SaveEditor_G
             }
             catch (Exception ex)
             {
-                if (showErrors) MessageBox.Show($"Error loading configured catalogs: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                else DbStatusText.Text = $"The item catalog could not be loaded. Check its file path in Sources… or choose a file with Item Catalog.";
+                if (showErrors) MessageBox.Show($"Your item lists could not be loaded: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                else DbStatusText.Text = "Your item lists could not be loaded. Check them in Sources…";
             }
             finally { Mouse.OverrideCursor = null; }
         }
@@ -151,7 +151,7 @@ namespace DDV_SaveEditor_G
             TypeComboBox.IsEnabled = true;
             UpdateCatalogOwnership();
             ApplyFilters();
-            DbStatusText.Text = $"Item catalog: {table.Rows.Count} entries from " +
+            DbStatusText.Text = $"Item lists: {table.Rows.Count} items from " +
                                 string.Join(", ", ItemDatabase.LoadedFiles.Select(Path.GetFileName));
             UpdateListsNotice();
             if (jsonData != null)
@@ -172,13 +172,13 @@ namespace DDV_SaveEditor_G
             try
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                DbStatusText.Text = "Loading item catalogs…";
+                DbStatusText.Text = "Loading your item lists…";
                 var table = await ItemDatabase.LoadCatalogFilesAsync(paths, replaceCurrent);
                 ApplyCatalogTable(table);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading item catalog: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"The item lists could not be loaded: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -196,7 +196,7 @@ namespace DDV_SaveEditor_G
 
             if (saves.Count == 0)
             {
-                MessageBox.Show("No Steam save files detected.",
+                MessageBox.Show("No saves found. Use Open Save… to pick the file yourself.",
                                 "No Saves Found",
                                 MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -232,7 +232,7 @@ namespace DDV_SaveEditor_G
             // spróbuj wczytać (plain‑JSON albo zaszyfrowany); tworzy .bak przy pierwszym odczycie
             if (!SaveDecoder.TryLoad(profilePath, out var decoded, out var json))
             {
-                MessageBox.Show("File is neither valid JSON nor a recognised encrypted save.",
+                MessageBox.Show("This file is not a save the editor can read.",
                                 "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -256,14 +256,12 @@ namespace DDV_SaveEditor_G
             SlotUpgradeComboBox.IsEnabled = true;
             CustomSlotSizeButton.IsEnabled = true;
             ValidateSaveButton.IsEnabled = true;
+            RestoreBackupButton.IsEnabled = true;
 
             if (!quiet)
             {
-                string version = jsonData["GameInfo"]?["Version"]?.ToString() ?? "?";
-                MessageBox.Show(
-                    $"Save file loaded successfully! (save version {version})\n" +
-                    (SaveDecoder.LastLoadWasEncrypted ? "Decoded copy and backup created." : "Backup created."),
-                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Save loaded. A backup is kept next to it.",
+                    "Save Loaded", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             return true;
         }
@@ -380,13 +378,13 @@ namespace DDV_SaveEditor_G
         {
             if (jsonData == null)
             {
-                MessageBox.Show("Load a save first.", "Save Check", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Load a save first.", "Check Save", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             if (ItemDatabase.Table == null)
             {
-                MessageBox.Show("Load the item catalog to check item destinations in the save.",
-                                "Catalog Not Loaded", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Load your item lists first.",
+                                "No Item Lists", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -395,7 +393,7 @@ namespace DDV_SaveEditor_G
                 CurrentSources().Sources.Any(s => s.Enabled && ListUpdates.LinkOf(s) != null) &&
                 MessageBox.Show($"Your item lists do not know {unknown.Count} item(s) in this save. " +
                                 "Usually that means the lists are older than your game.\n\nUpdate the item lists now?",
-                                "Save Check", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                                "Check Save", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 await UpdateListsAsync();
                 await ValidateSaveAsync(offerUpdate: false);
@@ -405,9 +403,10 @@ namespace DDV_SaveEditor_G
             var issues = SaveValidationModule.Analyze(jsonData);
             if (issues.Count == 0 && unknown.Count == 0)
             {
-                MessageBox.Show("No known placement issues were found, and every item in the save is in your item lists. " +
-                                "This check cannot confirm every unknown game field.",
-                                "Save Check", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("No problems found. Every item in your save is in your item lists. " +
+                                "This check can't catch everything.",
+                                "Check Save", MessageBoxButton.OK, MessageBoxImage.Information);
+                OfferToRemoveRiskyAdditions();
                 return;
             }
 
@@ -418,20 +417,36 @@ namespace DDV_SaveEditor_G
             if (issues.Count > 0)
             {
                 const int visibleLimit = 24;
-                string details = string.Join("\n\n", issues.Take(visibleLimit).Select(issue =>
-                    $"[{issue.Level}] {issue.Path}\n{issue.Message}"));
+                string details = string.Join("\n\n", issues.Take(visibleLimit).Select(IssueText));
                 if (issues.Count > visibleLimit)
-                    details += $"\n\n… and {issues.Count - visibleLimit} more item(s).";
+                    details += $"\n\n… and {issues.Count - visibleLimit} more.";
                 parts.Add($"{issues.Count} note(s):\n\n{details}");
             }
             else
             {
-                parts.Add("No known placement issues were found.");
+                parts.Add("No problems found.");
             }
 
             MessageBox.Show($"Read-only check. Nothing was changed.\n\n{string.Join("\n\n────────\n\n", parts)}",
-                            "Save Check", MessageBoxButton.OK,
+                            "Check Save", MessageBoxButton.OK,
                             issues.Any(i => i.Level == SaveIssueLevel.Error) ? MessageBoxImage.Warning : MessageBoxImage.Information);
+            OfferToRemoveRiskyAdditions();
+        }
+
+        /// <summary>One Check Save note in the editor's words: "Warning – Furniture: …", no save paths.</summary>
+        private string IssueText(SaveValidationIssue issue)
+        {
+            string level = issue.Level switch
+            {
+                SaveIssueLevel.Error => "Problem",
+                SaveIssueLevel.Caution => "Warning",
+                _ => "Note"
+            };
+            string path = System.Text.RegularExpressions.Regex.Replace(issue.Path, @"\[\d+\]", "");
+            string section = SaveDiffModule.Describe(jsonData, path);
+            return section.Contains('›') || section == "Player"
+                ? $"{level}: {issue.Message}"
+                : $"{level} – {section}: {issue.Message}";
         }
 
         /// <summary>Items a newer game update added that the item lists do not have yet.</summary>
@@ -449,8 +464,7 @@ namespace DDV_SaveEditor_G
 
             return $"Your item lists do not know {unknown.Count} item(s) in this save ({sections}). " +
                    "Usually the lists are older than your game. Open Sources… and click Update from links. " +
-                   "If some items are still unknown after that, the list authors have not added them yet. " +
-                   "Until then these items cannot be checked or added.\n\n" +
+                   "Items still unknown after that can't be checked or added until the list makers add them.\n\n" +
                    string.Join("\n", lines);
         }
 
@@ -470,7 +484,7 @@ namespace DDV_SaveEditor_G
             if (!SaveDecoder.TryDecode(firstDialog.FileName, out var first, out _) ||
                 !SaveDecoder.TryDecode(secondDialog.FileName, out var second, out _))
             {
-                MessageBox.Show("One of the profiles could not be read as JSON or an encrypted DDV save.",
+                MessageBox.Show("One of the files is not a save the editor can read.",
                                 "Read Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -478,7 +492,7 @@ namespace DDV_SaveEditor_G
             var diff = SaveDiffModule.Compare(first, second, maxPaths: int.MaxValue);
             if (!diff.HasChanges)
             {
-                MessageBox.Show("The JSON contents of these profiles are identical.", "Compare Saves",
+                MessageBox.Show("These two saves are the same.", "Compare Saves",
                                 MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -668,10 +682,11 @@ namespace DDV_SaveEditor_G
             // reapply its subtype-specific scope even when SelectedItem is unchanged.
             ApplyFilters();
 
-            bool readOnlyTab = CurrentTab == "Mounts" || (IsCurrentStorageTab &&
-                (!TryGetCurrentStorageInfo(out var storageInfo) || !ListInventoryModule.IsEditableType(storageInfo.ItemType)));
+            // Mounts can be added (experimental) but not removed; tools and presets likewise.
+            bool readOnlyTab = IsCurrentStorageTab &&
+                (!TryGetCurrentStorageInfo(out var storageInfo) || !ListInventoryModule.IsEditableType(storageInfo.ItemType));
             AddItemButton.IsEnabled = !readOnlyTab;
-            RemoveSelectedButton.IsEnabled = !readOnlyTab && CurrentTab is not ("Tools" or "Presets");
+            RemoveSelectedButton.IsEnabled = !readOnlyTab && CurrentTab is not ("Tools" or "Presets" or "Mounts");
             UpdateCollectionHelpText();
         }
 
@@ -687,18 +702,18 @@ namespace DDV_SaveEditor_G
 
             CollectionHelpText.Text = CurrentTab switch
             {
-                "Backpack" => "Backpack: items are stored in inventory slots. The game decides which items belong here.",
-                "Pets" => "Companions: pets and critters are stored in the companion collection. New entries may show a save-format warning.",
-                "Mounts" => "Mounts are progression records. This section is read-only until their save format is verified.",
-                "Tools" => "Tools & accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
-                "Presets" => "Presets: the game's ready-made decoration sets. A preset needs its furniture to be placed, so the editor offers to add what is missing. Removing is not supported.",
+                "Backpack" => "Backpack: what you carry, slot by slot.",
+                "Pets" => "Companions: your pets and critters.",
+                "Mounts" => "Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy. Mounts can't be removed by the editor.",
+                "Tools" => "Tools & Accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
+                "Presets" => "Presets: ready-made decoration sets. Adding one also offers the furniture it needs. Removing is not supported.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
                 _ when TryGetCurrentStorageItemType(out var itemType) && !storageInfos.ContainsKey(itemType) =>
                     $"{DisplayInventoryType(itemType)} is not present in this save.",
                 _ when TryGetCurrentStorageItemType(out var itemType) && !ListInventoryModule.IsEditableType(itemType) =>
-                    $"{DisplayInventoryType(itemType)} is shown read-only because its save format is not verified.",
+                    $"{DisplayInventoryType(itemType)} can only be viewed, not changed.",
                 _ when TryGetCurrentStorageItemType(out var itemType) =>
-                    $"{DisplayInventoryType(itemType)} collection. Items are routed here automatically when the game stores them in this category.",
+                    $"{DisplayInventoryType(itemType)}: items you add go here by themselves.",
                 _ => "Choose a category tab to view that part of your save."
             };
         }
@@ -1044,13 +1059,13 @@ namespace DDV_SaveEditor_G
             if (jsonData == null)
             {
                 MountsDataGrid.ItemsSource = null;
-                MountsStatusText.Text = "Load a save to view unlocked mounts. Experimental additions are available through Find & Add Items.";
+                MountsStatusText.Text = "Load a save to see your mounts. Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy.";
                 return;
             }
 
             var table = MountModule.MapMounts(jsonData);
             MountsDataGrid.ItemsSource = table.DefaultView;
-            MountsStatusText.Text = $"Unlocked mounts: {table.Rows.Count}. You can add a catalog mount with Find & Add Items. New entries are experimental and include only MountItemID; bond and customization are not initialized.";
+            MountsStatusText.Text = $"Unlocked mounts: {table.Rows.Count}. Adding a mount is experimental: it has no bond or look settings yet. Try it on a backup copy. Mounts can't be removed by the editor.";
         }
 
         private void PopulateTools()
@@ -1066,7 +1081,7 @@ namespace DDV_SaveEditor_G
             ToolsDataGrid.ItemsSource = table.DefaultView;
             int accessories = table.AsEnumerable().Count(r => r.Field<string>("Kind") == "Accessory");
             ToolsStatusText.Text = $"Tools and accessories: {table.Rows.Count} ({accessories} accessories). " +
-                                   "Find an umbrella or parasol in the catalog and click Add item; it is added unequipped.";
+                                   "Find an umbrella or parasol in the item list and click Add item; it is added unequipped.";
         }
 
         private void PopulatePresets()
@@ -1081,12 +1096,12 @@ namespace DDV_SaveEditor_G
             var table = PresetModule.MapPresets(jsonData);
             PresetsDataGrid.ItemsSource = table.DefaultView;
             PresetsStatusText.Text = ItemPlacement.PresetList(jsonData) == null
-                ? "This save has no preset list, so presets cannot be added."
-                : $"Unlocked presets: {table.Rows.Count}. Find a preset in the catalog and click Add item - " +
+                ? "This save has no preset list yet, so presets can't be added."
+                : $"Unlocked presets: {table.Rows.Count}. Pick a preset in the item list and click Add item; " +
                   (PresetLayouts.All.Count > 0
-                      ? $"the editor also offers the furniture it needs (read from your game, {PresetLayouts.All.Count} presets). "
-                      : "the game folder was not found, so the furniture a preset needs cannot be offered. ") +
-                  "Unreleased presets are hidden unless you untick \"Hide risky or unfinished items\".";
+                      ? "the editor also offers the furniture it needs. "
+                      : "the game folder was not found, so the furniture a preset needs can't be offered. ") +
+                  "Untick \"Hide risky or unfinished items\" to see unreleased ones.";
         }
 
         private void UpdateCurrentPetText()
@@ -1122,7 +1137,7 @@ namespace DDV_SaveEditor_G
             if (PetDataGrid.SelectedItem is not DataRowView rv ||
                 !PetModule.IsSupportedPet(jsonData, Convert.ToInt64(rv["Pet ID"])))
             {
-                MessageBox.Show("Select a recognized pet or critter from the game catalog.", "Choose a Companion");
+                MessageBox.Show("Pick a pet or critter that is in your item lists.", "Choose a Companion");
                 return;
             }
 
@@ -1209,8 +1224,8 @@ namespace DDV_SaveEditor_G
                         ? "Load a save to check this category."
                         : "This category is not present in the loaded save."
                     : !ListInventoryModule.IsEditableType(itemType)
-                        ? "Read-only category — this save format is not supported yet."
-                        : $"Player.ListInventories[{info.Key}] — {itemType}";
+                        ? "View only. The editor can't change this yet."
+                        : title;
                 InventoryTabs.Items.Insert(insertIndex++, new TabItem
                 {
                     Tag = $"InventoryCategory:{itemType}", Header = header,
@@ -1222,7 +1237,7 @@ namespace DDV_SaveEditor_G
             // Read-only state is shown in the selected category's help text and tab tooltip.
             // Keep the add area focused on routing and per-action feedback instead of a
             // global warning that can become stale after switching tabs or saves.
-            AddStatusText.Text = "Select an item from the catalog to see where it will go. Items are routed using the game's save rules.";
+            AddStatusText.Text = "Pick an item and click Add item. The editor puts it where the game keeps it.";
         }
 
         private static DataGrid CreateStorageGrid(DataTable table)
@@ -1323,7 +1338,7 @@ namespace DDV_SaveEditor_G
             string label = row == null ? id : $"{ItemDatabase.Get(row, "LOCALIZED_DISPLAY_NAME")} ({id})";
             return MessageBox.Show(
                        $"{label}\n\n• {string.Join("\n• ", warnings)}\n\n" +
-                       "This item has warnings and may not work or may change the save unexpectedly. Add it anyway?",
+                       "Add it anyway? Back up your save first.",
                        "Item Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
         }
 
@@ -1340,24 +1355,24 @@ namespace DDV_SaveEditor_G
             if (row == null)
             {
                 warnings.Add(ItemDatabase.Table == null
-                    ? "The item catalog is not loaded, so this ID cannot be checked."
-                    : "This ID was not found in any loaded item catalog.");
+                    ? "No item lists are loaded, so this item can't be checked."
+                    : "This ID is not in your item lists.");
             }
             else if (progressionWarning == null && ItemDatabase.IsUnsafe(row))
             {
-                warnings.Add($"The catalog marks this item as unsafe: " +
+                warnings.Add($"The item lists mark it UNSAFE: " +
                              $"{ItemDatabase.Get(row, "NOTES", ItemDatabase.Get(row, "CATEGORY"))}");
             }
             else if (progressionWarning == null && ItemDatabase.Get(row, "SAFETY", "") == "CAUTION")
             {
-                warnings.Add("The catalog marks this item as CAUTION. Its type, name, or save behavior may need manual verification.");
+                warnings.Add("The item lists mark it CAUTION. Check it in the game after adding.");
             }
             else if (progressionWarning == null && ItemDatabase.Get(row, "SAFETY", "") == "UNKNOWN")
             {
-                warnings.Add("The catalog does not recognize this as a supported inventory item type.");
+                warnings.Add("The item lists say too little about it (UNKNOWN).");
             }
             if (row != null && !ItemDatabase.IsCommunityChecked(row))
-                warnings.Add("Only in the game-file dump, not in the community list: it may be new, unfinished or a developer item that can break the game.");
+                warnings.Add("Not checked by the community yet: it may be new, unfinished or a developer item. Some of these break the game.");
             if (extraWarning != null)
                 warnings.Add(extraWarning);
             return warnings;
@@ -1437,8 +1452,8 @@ namespace DDV_SaveEditor_G
             var placement = ItemPlacement.Resolve(jsonData, idTxt);
             if (placement.Kind == PlacementKind.Mount && CurrentTab != "Mounts")
             {
-                MessageBox.Show("Mounts can only be added from the Mounts tab.",
-                    "Choose Mounts", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Open the Mounts tab to add a mount.",
+                    "Add Mount", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -1450,14 +1465,14 @@ namespace DDV_SaveEditor_G
                 var manual = row == null || allowManualRiskOverride ? ManualPlacement() : null;
                 if (manual == null)
                 {
-                    MessageBox.Show($"Cannot add {idTxt}:\n{placement.Problem ?? "No supported destination is available in the current section."}",
-                                    "Unsupported Item", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"Can't add {idTxt}:\n{placement.Problem ?? "The editor doesn't know where this item goes."}",
+                                    "Can't Add Item", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 string routeWarning = allowManualRiskOverride
-                    ? $"{progressionWarning} The automatic save route is unavailable ({placement.Problem ?? "destination mismatch"}). You selected {manual.Label} manually; the game may reject this or damage the save."
-                    : $"This will be added to the current section ({manual.Label}) without confirmation that the game accepts it there.";
+                    ? $"{progressionWarning} The editor can't tell where this item goes. It will go to {manual.Label}, the tab you have open. The game may not accept it, or it may damage the save."
+                    : $"This item is not in your item lists. It will go to {manual.Label}, the tab you have open. The game may not accept it there.";
                 placement = new Placement
                 {
                     Kind = manual.Kind, ListKey = manual.ListKey, Label = manual.Label,
@@ -1483,7 +1498,7 @@ namespace DDV_SaveEditor_G
             var itemRow = ItemDatabase.Find(idTxt);
             string safety = ItemDatabase.Get(itemRow, "SAFETY", "");
             string risk = placement.Warning ?? (safety == "CAUTION"
-                ? "The catalog marks this item as CAUTION; its in-game result is uncertain."
+                ? "Marked CAUTION in the item lists. Check it in the game."
                 : safety == "UNSAFE" ? "Added despite the UNSAFE warning." : "");
             string riskSuffix = string.IsNullOrEmpty(risk) ? "" : $"\n⚠ {risk}";
 
@@ -1521,14 +1536,14 @@ namespace DDV_SaveEditor_G
 
                 case PlacementKind.Mount:
                     added = MountModule.AddMount(jsonData, id);
-                    if (!added) extra = " — already present or mount data is unavailable";
+                    if (!added) extra = " — already in the save, or this save has no mounts yet";
                     break;
 
                 case PlacementKind.Currency:
                     SavePlayerFields();   // pola w UI wygrywają przy zapisie – najpierw je wpisz do JSON
                     var now = ItemPlacement.AddCurrency(jsonData, id, amount);
                     added = now != null;
-                    if (added) { PopulatePlayerFields(); extra = $" (stan: {now})"; }
+                    if (added) { PopulatePlayerFields(); extra = $" (now {now})"; }
                     break;
 
                 case PlacementKind.Tool:
@@ -1568,7 +1583,7 @@ namespace DDV_SaveEditor_G
                 var placement = ItemPlacement.Resolve(jsonData, idTxt);
                 if (placement.Kind == PlacementKind.Unsupported || placement.Problem != null)
                 {
-                    skipped.Add($"{name}: {placement.Problem ?? "no supported place in the save"}");
+                    skipped.Add($"{name}: {placement.Problem ?? "the editor doesn't know where it goes"}");
                     continue;
                 }
                 if (placement.Kind is PlacementKind.Mount or PlacementKind.DecorationPreset)
@@ -1626,8 +1641,8 @@ namespace DDV_SaveEditor_G
             {
                 if (!TryGetCurrentStorageInfo(out var info) || !ListInventoryModule.IsEditableType(info.ItemType))
                 {
-                    MessageBox.Show("This category is read-only because its save format is not supported yet.",
-                        "Read-Only Category", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("The editor can't change this category yet.",
+                        "View Only", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
                 RemoveSelectedInventoryRows(CurrentStorageGrid);
@@ -1637,13 +1652,13 @@ namespace DDV_SaveEditor_G
             switch (CurrentTab)
             {
                 case "Mounts":
-                    MessageBox.Show("Mounts are progression objects and can only be viewed in this version.", "Read-Only Section");
+                    MessageBox.Show("Mounts can't be removed by the editor.", "Can't Remove");
                     return;
                 case "Tools":
-                    MessageBox.Show("Tools and accessories can be added, but not removed: the game links tools to upgrades and to the one in use.", "Read-Only Section");
+                    MessageBox.Show("Tools and accessories can be added, but not removed: the game links tools to upgrades and to the one in use.", "Can't Remove");
                     return;
                 case "Presets":
-                    MessageBox.Show("Presets can be added, but not removed in this version.", "Read-Only Section");
+                    MessageBox.Show("Presets can be added, but not removed.", "Can't Remove");
                     return;
                 case "Pets":
                     var pets = PetDataGrid.SelectedItems.Cast<DataRowView>().ToList();
@@ -1656,8 +1671,8 @@ namespace DDV_SaveEditor_G
                     if (removablePets.Count > 0)
                         petsDirty = true;   // zapis przy "Save Changes", jak w pozostałych zakładkach
                     if (protectedPets > 0)
-                        MessageBox.Show($"Skipped {protectedPets} unrecognized companion record(s). They will be preserved unchanged.",
-                            "Protected Records", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show($"{protectedPets} companion(s) not in your item lists were kept.",
+                            "Kept", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
 
                 case "Clothes":
@@ -1690,8 +1705,8 @@ namespace DDV_SaveEditor_G
             int protectedRows = items.Count - removable.Count;
             foreach (var rv in removable) rv.Row.Delete();
             if (protectedRows > 0)
-                MessageBox.Show($"Skipped {protectedRows} entries with Amount = 0. They may represent furniture or buildings placed in the world.",
-                    "Protected Records", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"{protectedRows} item(s) with amount 0 were kept: they are probably placed in your valley.",
+                    "Kept", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // 3) Double‐click w ExcelDataGrid → dodaje +1 szt. do aktywnej zakładki

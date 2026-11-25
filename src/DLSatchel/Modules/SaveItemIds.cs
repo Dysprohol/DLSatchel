@@ -20,7 +20,7 @@ namespace DDV_SaveEditor_G.Modules
                 {
                     string type = inventory.Value["CompatibleItemType"]?.ToString() ?? "";
                     type = type.StartsWith(ListInventoryModule.ItemTypePrefix) ? type[ListInventoryModule.ItemTypePrefix.Length..] : type;
-                    string section = type.Length > 0 ? "Storage: " + type : "Storage";
+                    string section = type.Length > 0 ? ListInventoryModule.DisplayName(type) : "Storage";
                     if (inventory.Value["Inventory"] is JObject items)
                         foreach (var item in items.Properties()) Add(ids, item.Name, section);
                 }
@@ -30,9 +30,9 @@ namespace DDV_SaveEditor_G.Modules
                 foreach (var item in backpack) Add(ids, item?["ItemID"]?.ToString(), "Backpack");
             AddArray(ids, player["Pets"] as JArray, "PetItemID", "Companions");
             AddArray(ids, player["Mounts"] as JArray, "MountItemID", "Mounts");
-            AddArray(ids, player["Tools"] as JArray, "ToolItemID", "Tools & accessories");
+            AddArray(ids, player["Tools"] as JArray, "ToolItemID", "Tools & Accessories");
             AddArray(ids, player["PremadeDecorationPresets"]?["DecorationPresets"] as JArray, "PresetID", "Presets");
-            AddArray(ids, player["Cookbook"]?["Recipes"] as JArray, "RecipeID", "Recipes");
+            AddArray(ids, player["Cookbook"]?["Recipes"] as JArray, "RecipeID", "Cooking recipes");
             AddArray(ids, player["UnlockedCraftingRecipes"] as JArray, "RecipeID", "Crafting recipes");
             if (player["CurrencyAmounts"] is JObject currencies)
                 foreach (var currency in currencies.Properties()) Add(ids, currency.Name, "Currencies");

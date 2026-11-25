@@ -118,7 +118,7 @@ namespace DDV_SaveEditor_G.Modules
             foreach (string path in paths)
             {
                 if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-                    throw new FileNotFoundException("The selected item catalog does not exist.", path);
+                    throw new FileNotFoundException("The item list file was not found.", path);
                 fullPaths.Add(Path.GetFullPath(path));
             }
 
@@ -228,7 +228,8 @@ namespace DDV_SaveEditor_G.Modules
         {
             if (row == null) return false;
             if (Get(row, "CATEGORY", "").Length > 0 || Get(row, "NOTES", "").Length > 0) return true;
-            return long.TryParse(Get(row, "ID", ""), out long id) && !string.IsNullOrEmpty(FindRecord(id)?.CatalogueCategory);
+            return long.TryParse(Get(row, "ID", ""), out long id) &&
+                   FindRecord(id) is { } record && (record.CatalogueCategory.Length > 0 || record.Tested.Length > 0);
         }
 
         public static bool IsUnsafe(DataRow? row)

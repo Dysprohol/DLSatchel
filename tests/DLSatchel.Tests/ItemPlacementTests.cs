@@ -99,12 +99,12 @@ namespace DDV.SaveEditor.Tests
             if (type == "ActivityItem")
             {
                 Assert.Equal(PlacementKind.Backpack, ItemPlacement.Resolve(save, id.ToString()).Kind);
-                Assert.Contains("Mission/Event/Character", ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
+                Assert.Contains("quest, event or character", ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
             }
             else
             {
                 Assert.Equal(PlacementKind.Unsupported, ItemPlacement.Resolve(save, id.ToString()).Kind);
-                Assert.Contains("Character", ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
+                Assert.Contains("character", ItemPlacement.GetRiskWarning(ItemDatabase.Find(id)));
             }
         }
 
@@ -130,7 +130,7 @@ namespace DDV.SaveEditor.Tests
 
             Placement placement = ItemPlacement.Resolve(save, "42000003");
             Assert.Equal(PlacementKind.Mount, placement.Kind);
-            Assert.Contains("EXPERIMENTAL", placement.Warning);
+            Assert.Contains("experimental", placement.Warning);
             Assert.True(MountModule.AddMount(save, 42000003));
             Assert.False(MountModule.AddMount(save, 42000003));
             Assert.Equal(42000003, save["Player"]?["Mounts"]?[1]?["MountItemID"]?.Value<long>());
@@ -142,7 +142,7 @@ namespace DDV.SaveEditor.Tests
             Assert.True((bool)save["Player"]?["ContainerInventories"]?["9"]?["CharacterData"]!);
 
             var issues = SaveValidationModule.Analyze(save);
-            Assert.Contains(issues, issue => issue.Level == SaveIssueLevel.Caution && issue.Message.Contains("only MountItemID"));
+            Assert.Contains(issues, issue => issue.Level == SaveIssueLevel.Caution && issue.Message.Contains("no bond or look settings"));
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace DDV.SaveEditor.Tests
             Assert.Equal(PlacementKind.ListInventory, placement.Kind);
             Assert.Equal("0", placement.ListKey);
             Assert.Null(placement.Problem);
-            Assert.Contains("not yet been confirmed", placement.Warning);
+            Assert.Contains("haven't been tested", placement.Warning);
 
             var furniture = ListInventoryModule.Map(save, placement.ListKey!);
             furniture.Rows.Add(40200507L, "?", "?", 1, "?");
@@ -333,7 +333,7 @@ namespace DDV.SaveEditor.Tests
             Assert.Equal("—", known["Name"]);
             Assert.Equal("Furniture", known["Category"]);
             Assert.Equal("?", missing["Name"]);
-            Assert.Equal("(not in catalog)", missing["Localized Name"]);
+            Assert.Equal("(not in your item lists)", missing["Localized Name"]);
             Assert.Equal("Furniture", missing["Category"]);
         }
 

@@ -31,7 +31,7 @@ namespace DDV_SaveEditor_G.Modules
                 long id = ReadPetId(tok);
                 bool editable = IsSupportedPet(root, id);
                 var item = id > 0 ? ItemDatabase.Find(id) : null;
-                string internalName = ItemDatabase.Get(item, "NAME", "Unrecognized companion entry");
+                string internalName = ItemDatabase.Get(item, "NAME", "Unknown companion");
                 string displayName = ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME", internalName);
                 tbl.Rows.Add(id, internalName, displayName,
                     tok.ToString(Newtonsoft.Json.Formatting.None), editable);
