@@ -306,8 +306,8 @@ namespace DDV_SaveEditor_G.Modules
         private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
 
         internal const string CritterProblem =
-            "This is a wild critter that walks around your valley, not a companion. Players report that adding one as a " +
-            "companion breaks the Companions list. The companion version has its own ID - search for the same name.";
+            "This is a wild critter that walks around your valley, not a companion. Tested in the game: one critter in " +
+            "the companion list empties the Companions list. The companion version has its own ID - search for the same name.";
 
         /// <summary>A wild critter (Critter/..., IDs 1201xxxxx) rather than a companion.</summary>
         public static bool IsWildCritter(long id)

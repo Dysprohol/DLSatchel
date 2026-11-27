@@ -81,7 +81,7 @@ namespace DDV_SaveEditor_G.Modules
                         issues.Add(new()
                         {
                             Level = SaveIssueLevel.Error, Path = path,
-                            Message = $"{critter} ({id}) is a wild critter, not a companion. Players report it breaks the Companions list. " +
+                            Message = $"{critter} ({id}) is a wild critter, not a companion. Tested in the game: it empties the Companions list. " +
                                       "Remove it (Companions tab, Remove selected) - Check Save also offers it."
                         });
                         continue;

@@ -71,7 +71,7 @@ namespace DDV_SaveEditor_G
             var names = critters.Take(15).Select(r => $"• {r["Localized Name"]} ({r["Pet ID"]})").ToList();
             if (critters.Count > 15) names.Add($"… and {critters.Count - 15} more");
             if (MessageBox.Show($"{critters.Count} wild critter(s) are in your companion list. The game never puts them there, " +
-                                $"and players report they break the Companions list:\n\n{string.Join("\n", names)}\n\n" +
+                                $"and in the game even one of them empties the Companions list:\n\n{string.Join("\n", names)}\n\n" +
                                 "Remove them? Nothing is written until you click Save Changes.",
                                 "Check Save", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 return;

@@ -48,7 +48,7 @@ handles that by itself. Before every save it makes a backup, so you can always g
    To add several at once, select them with **Ctrl** or **Shift** and click **Add item**.
    Companions are added the same way and show up in the game's Companions menu. Wild critters (the
    animals walking around your valley) are not companions: the editor won't add them, and **Check Save**
-   finds any added before - players report they break the Companions list.
+   finds any added before - tested in the game: even one empties the Companions list.
 
    ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.2)
 

@@ -253,7 +253,7 @@ namespace DDV.SaveEditor.Tests
                     added.Add((kind, id, placement));
                 }
                 if (backpack != null) InventoryModule.UpdateJsonFromTable(json, backpack);
-                PetModule.SavePets(json, pets, updateCollections: true);
+                PetModule.SavePets(json, pets, updateCollections: false);   // as Save Changes does
                 foreach (var (key, table) in lists) ListInventoryModule.Save(json, key, table);
 
                 // Write the encrypted file and read it back, as the game will.

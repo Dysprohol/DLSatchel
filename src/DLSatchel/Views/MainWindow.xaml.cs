@@ -364,7 +364,10 @@ namespace DDV_SaveEditor_G
                     InventoryModule.UpdateJsonFromTable(jsonData, inventoryTable);
 
                 if (petTable != null)
-                    PetModule.SavePets(jsonData, petTable, updateCollections: petsDirty);
+                    // Only the companions that changed: adding one already marks it collected (MarkCollected).
+                    // Recounting every collection set flags the game itself had left unset (seen on a real
+                    // save: removing one critter flipped 25 companion flags), so it is not done any more.
+                    PetModule.SavePets(jsonData, petTable, updateCollections: false);
 
                 foreach (var (key, tbl) in storageTables)
                     ListInventoryModule.Save(jsonData, key, tbl);
@@ -439,7 +442,8 @@ namespace DDV_SaveEditor_G
                 return;
             }
 
-            var issues = SaveValidationModule.Analyze(jsonData);
+            // Problems first, then warnings, then notes - the one that matters must not hide under the rest.
+            var issues = SaveValidationModule.Analyze(jsonData).OrderByDescending(i => i.Level).ToList();
             if (issues.Count == 0 && unknown.Count == 0)
             {
                 MessageBox.Show("No problems found. Every item in your save is in your item lists. " +

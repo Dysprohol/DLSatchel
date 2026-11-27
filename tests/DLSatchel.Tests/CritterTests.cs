@@ -57,6 +57,23 @@ namespace DDV.SaveEditor.Tests
         }
 
         [Fact]
+        public async Task RemovingACompanion_LeavesCollectionFlagsAlone()
+        {
+            await LoadCatalogAsync();
+            var save = Save(120000002, 120100139);
+            save["Player"]!["CollectionSets"] = JArray.Parse(
+                """[ { "GroupData": [ { "GroupsCollectionItems": { "120000002": false, "120100139": true } } ] } ]""");
+            var flagsBefore = save["Player"]!["CollectionSets"]!.DeepClone();
+
+            var pets = PetModule.MapPets(save);
+            pets.Rows[1].Delete();                                   // the critter
+            PetModule.SavePets(save, pets, updateCollections: false); // as Save Changes does
+
+            Assert.Single((JArray)save["Player"]!["Pets"]!);
+            Assert.True(JToken.DeepEquals(flagsBefore, save["Player"]!["CollectionSets"]));
+        }
+
+        [Fact]
         public async Task CritterIds_AreRecognised_EvenWithoutTheirName()
         {
             await LoadCatalogAsync();
