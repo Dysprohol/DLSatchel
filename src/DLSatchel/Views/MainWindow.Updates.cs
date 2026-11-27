@@ -151,6 +151,7 @@ namespace DDV_SaveEditor_G
             UpdateStatusRun.Text = text;
             InstallUpdateRun.Text = action;
             InstallUpdateLink.IsEnabled = action.Length > 0;
+            UpdateStatusLine.Visibility = text.Length + action.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

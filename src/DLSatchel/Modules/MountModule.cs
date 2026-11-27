@@ -52,11 +52,24 @@ namespace DDV_SaveEditor_G.Modules
                     name,
                     Display(mount?["BondingLevel"]),
                     Display(mount?["BondingPoints"]),
-                    Display(mount?["ValleyAbilityForLevel"]),
+                    DisplayAbilities(mount?["ValleyAbilityForLevel"]),
                     mount?["Customization"] is JObject ? "Yes" : "No");
             }
 
             return table;
+        }
+
+        /// <summary>"Digging, Mining" instead of the raw { "2": id, "3": id } (level: ability) the save keeps.</summary>
+        private static string DisplayAbilities(JToken? value)
+        {
+            if (value is not JObject levels || !levels.HasValues) return Display(value);
+            return string.Join(", ", levels.Properties().Select(level =>
+            {
+                long id = level.Value.Type == JTokenType.Integer ? level.Value.Value<long>() : 0;
+                var item = id > 0 ? ItemDatabase.Find(id) : null;
+                string name = item == null ? level.Value.ToString() : ItemDatabase.Get(item, "LOCALIZED_DISPLAY_NAME", ItemDatabase.Get(item, "NAME", id.ToString()));
+                return name;
+            }));
         }
 
         private static string Display(JToken? value) =>

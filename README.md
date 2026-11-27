@@ -12,7 +12,7 @@ Add items, clothes, furniture, companions and coins to your save on PC.
 <a href="https://ko-fi.com/Dysprohol"><img alt="Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white"></a>
 </p>
 
-![The editor with a save open](docs/img/screen-overview.png?v=1.5.4)
+![The editor with a save open](docs/img/screen-overview.png?v=1.5.5)
 
 Your whole game is kept in one file on your PC. DL Satchel opens that file and shows it as simple
 lists. You pick what you want, click **Save Changes**, start the game - and it is there.
@@ -50,12 +50,12 @@ handles that by itself. Before every save it makes a backup, so you can always g
    animals walking around your valley) are not companions: the editor won't add them, and **Check Save**
    finds any added before - tested in the game: even one empties the Companions list.
 
-   ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.4)
+   ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.5)
 
-6. To remove something, open a collection on the right (for example **Furniture**), select it and
-   click **Remove selected**. Coins and level are at the top left.
+6. To remove something, click a collection in the middle (for example **Furniture**) - it opens on the
+   right - select the item there and click **Remove selected**. Coins and level are at the top left.
 
-   ![Your furniture](docs/img/screen-collection.png?v=1.5.4)
+   ![Your furniture](docs/img/screen-collection.png?v=1.5.5)
 
 7. Click **Save Changes**. The editor shows what will change (for example "Backpack") and asks you
    to confirm. Then start the game.
@@ -63,14 +63,14 @@ handles that by itself. Before every save it makes a backup, so you can always g
 ## Umbrellas and parasols
 
 Things your character holds - umbrellas, parasols and the like - are **not clothes**. The game keeps
-them together with your tools. Open the **Tools & Accessories** tab, find the item and click
+them together with your tools. Click **Tools & Accessories**, find the item and click
 **Add item**. It is added unequipped, so you pick it in the game.
 
-![Tools and accessories](docs/img/screen-tools.png?v=1.5.4)
+![Tools and accessories](docs/img/screen-tools.png?v=1.5.5)
 
 ## Decoration presets
 
-Ready-made decoration sets (for example a castle or a haunted house) are on the **Presets** tab. Pick one and click **Add item** - after saving, it shows up in
+Ready-made decoration sets (for example a castle or a haunted house) are under **Presets**. Pick one and click **Add item** - after saving, it shows up in
 the game's preset menu.
 
 A preset can only be placed if you own its furniture. When you add one, the editor shows which
@@ -79,11 +79,11 @@ pieces you are missing and can add them to your furniture storage in one go.
 Most presets come from the shop. The ones the lists call "unreleased" are hidden at first: untick
 **Hide risky or unfinished items** to see them.
 
-![Decoration presets](docs/img/screen-presets-furniture.png?v=1.5.4)
+![Decoration presets](docs/img/screen-presets-furniture.png?v=1.5.5)
 
 ## Adding everything you're missing
 
-Open a collection on the right (for example **Wardrobe**) and click **Add all missing…**. The editor
+Click a collection in the middle (for example **Wardrobe**) and click **Add all missing…** above its list. The editor
 finds every item of that collection you don't have yet and lets you choose which kinds to add.
 
 Only ordinary items and event items are ticked at first. Everything else stays unticked until you
@@ -109,7 +109,7 @@ or the ship, the editor warns you when you add them.
 
 ## Mounts
 
-Open the **Mounts** tab, pick a mount and click **Add item**. If your save already has mounts, the
+Click **Mounts**, pick a mount and click **Add item**. If your save already has mounts, the
 game sets up the new one's bond and favourite treats by itself (tested in the game). If it has none
 yet, the editor warns you: the game hasn't unlocked mounts, and a player got a white screen after
 adding a horse that early. The editor can't remove mounts.
@@ -132,7 +132,7 @@ or add carefully.
 After every update the gold line says how many items are new. Want to know without clicking? Tick
 **New items at start** (top right): once a day the editor gets the newest lists and tells you.
 
-![The game was updated after your item lists. Update now](docs/img/screen-lists-notice.png?v=1.5.4)
+![The game was updated after your item lists. Update now](docs/img/screen-lists-notice.png?v=1.5.5)
 
 A list is only replaced if the new copy reads correctly, so a broken or emptied sheet can't spoil
 anything. Fresh copies are kept in the editor's own folder; your own Excel files are never changed.
@@ -165,7 +165,7 @@ lists - and says so when nobody has tested it. A plain **CAUTION** item only get
 status line; a window opens only when there is a real reason: quest items, **UNSAFE**, items the
 community hasn't checked, or a missing expansion. Tired of the questions? Tick **Don't ask again** in
 the window; the warnings then only show in the status line. **Ask before adding items with warnings**
-next to the search brings the questions back.
+under the search brings the questions back.
 
 ### A list of items tested in the game
 

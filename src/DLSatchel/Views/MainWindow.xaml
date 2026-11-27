@@ -45,17 +45,19 @@
                     <Button Name="CheckUpdatesButton" Click="CheckUpdates_Click" Padding="10,3" FontSize="12"
                             Content="Check for updates" ToolTip="Ask GitHub whether a newer version is out"/>
                 </StackPanel>
-                <CheckBox Name="CheckUpdatesAtStartCheckBox" HorizontalAlignment="Right" Margin="0,5,0,0" FontSize="11"
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+                <CheckBox Name="CheckUpdatesAtStartCheckBox" FontSize="11"
                           Checked="CheckUpdatesAtStart_Changed" Unchecked="CheckUpdatesAtStart_Changed"
                           ToolTip="Check GitHub for a newer version every time the editor starts">
                     <TextBlock Text="Check at start"/>
                 </CheckBox>
-                <CheckBox Name="CheckListsAtStartCheckBox" HorizontalAlignment="Right" Margin="0,3,0,0" FontSize="11"
+                <CheckBox Name="CheckListsAtStartCheckBox" Margin="14,0,0,0" FontSize="11"
                           Checked="CheckListsAtStart_Changed" Unchecked="CheckListsAtStart_Changed"
                           ToolTip="Once a day at start, get the newest item lists and say how many items are new">
                     <TextBlock Text="New items at start"/>
                 </CheckBox>
-                <TextBlock HorizontalAlignment="Right" Margin="0,4,0,0" FontSize="11" TextWrapping="Wrap" TextAlignment="Right">
+                </StackPanel>
+                <TextBlock Name="UpdateStatusLine" Visibility="Collapsed" HorizontalAlignment="Right" Margin="0,3,0,0" FontSize="11" TextWrapping="Wrap" TextAlignment="Right">
                     <Run Name="UpdateStatusRun" Foreground="{StaticResource MutedStarlight}"/>
                     <Hyperlink Name="InstallUpdateLink" Click="InstallUpdate_Click" Foreground="{StaticResource DreamlightGold}"
                                FontWeight="SemiBold"><Run Name="InstallUpdateRun"/></Hyperlink>
@@ -150,12 +152,11 @@
                 </GroupBox.Header>
                 <StackPanel Margin="8">
                     <!-- Filters -->
-                    <Grid Margin="0,0,0,4">
+                    <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="2*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Item name" Margin="0,0,0,5"/>
@@ -169,39 +170,37 @@
                             <TextBlock Text="Category" Margin="0,0,0,5"/>
                             <ComboBox Name="TypeComboBox" IsEnabled="False" Height="28" SelectionChanged="TypeComboBox_SelectionChanged"/>
                         </StackPanel>
-                        <StackPanel Grid.Column="3" Margin="10,0" VerticalAlignment="Bottom">
-                            <CheckBox Name="HideUnsafeCheckBox"
+                    </Grid>
+                    <!-- Filters and the warning question: one row, a second only in a narrow window -->
+                    <WrapPanel Margin="0,0,0,6">
+                            <CheckBox Margin="0,6,18,0" Name="HideUnsafeCheckBox"
                                       IsChecked="True"
-                                      Checked="HideUnsafe_Changed" Unchecked="HideUnsafe_Changed"
-                                      Margin="0,0,0,6">
-                                <TextBlock Text="Hide risky or unfinished items" TextWrapping="Wrap"/>
+                                      Checked="HideUnsafe_Changed" Unchecked="HideUnsafe_Changed">
+                                <TextBlock Text="Hide risky or unfinished items"/>
                             </CheckBox>
-                            <CheckBox Name="HideCautionCheckBox"
+                            <CheckBox Margin="0,6,18,0" Name="HideCautionCheckBox"
                                       IsChecked="False"
                                       Checked="HideCaution_Changed" Unchecked="HideCaution_Changed"
-                                      ToolTip="Hide items marked CAUTION."
-                                      Margin="0,0,0,6">
-                                <TextBlock Text="Hide caution items" TextWrapping="Wrap"/>
+                                      ToolTip="Hide items marked CAUTION.">
+                                <TextBlock Text="Hide caution items"/>
                             </CheckBox>
-                            <CheckBox Name="HideTestCheckBox"
+                            <CheckBox Margin="0,6,18,0" Name="HideTestCheckBox"
                                       IsChecked="True"
                                       Checked="HideTest_Changed" Unchecked="HideTest_Changed"
-                                      ToolTip="Hide the developers' test items. Real items with &quot;Test&quot; in the name stay visible."
-                                      Margin="0,0,0,6">
-                                <TextBlock Text="Hide test items" TextWrapping="Wrap"/>
+                                      ToolTip="Hide the developers' test items. Real items with &quot;Test&quot; in the name stay visible.">
+                                <TextBlock Text="Hide test items"/>
                             </CheckBox>
-                            <CheckBox Name="HighlightOwnershipCheckBox" IsEnabled="False"
+                            <CheckBox Margin="0,6,18,0" Name="HighlightOwnershipCheckBox" IsEnabled="False"
                                       Checked="HighlightOwnership_Changed" Unchecked="HighlightOwnership_Changed"
                                       ToolTip="Teal: you have it. Blue: you don't. Items given to characters are not counted.">
-                                <TextBlock Text="Highlight owned / missing" TextWrapping="Wrap"/>
+                                <TextBlock Text="Highlight owned / missing"/>
                             </CheckBox>
-                            <CheckBox Name="AskWarningsCheckBox" IsChecked="True" Margin="0,6,0,0"
+                            <CheckBox Margin="0,6,18,0" Name="AskWarningsCheckBox" IsChecked="True"
                                       Checked="AskWarnings_Changed" Unchecked="AskWarnings_Changed"
                                       ToolTip="Off: items with warnings are added without a question; the warning shows in the line under Add item.">
-                                <TextBlock Text="Ask before adding items with warnings" TextWrapping="Wrap"/>
+                                <TextBlock Text="Ask before adding items with warnings"/>
                             </CheckBox>
-                        </StackPanel>
-                    </Grid>
+                    </WrapPanel>
                                         <!-- Add selected item and edit actions -->
                     <Border Background="#14213A" BorderBrush="{StaticResource Line}" BorderThickness="1"
                             CornerRadius="9" Padding="6" Margin="0,0,0,0">
@@ -254,7 +253,7 @@
         <!-- DataGrid Section -->
         <Grid Grid.Row="2" Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.8*"/><ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="2*" MinWidth="280"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="1.25*" MinWidth="280"/>
             </Grid.ColumnDefinitions>
 
             <!-- Item catalog -->
@@ -279,10 +278,10 @@
                                     Width="Auto"/>
                         <DataGridTextColumn Header="Name"
                                     Binding="{Binding NAME}"
-                                    Width="*"/>
+                                    Width="*" MinWidth="70"/>
                         <DataGridTextColumn Header="In-game Name"
                                     Binding="{Binding LOCALIZED_DISPLAY_NAME}"
-                                    Width="2*"/>
+                                    Width="2*" MinWidth="150"/>
                         <DataGridTextColumn Header="Type"
                                     Binding="{Binding TYPE}"
                                     Width="Auto"/>
@@ -305,61 +304,23 @@
                 </DataGrid>
             </GroupBox>
 
-            <!-- Player collection -->
-            <GroupBox Grid.Column="1" Margin="5,0,0,0">
-                <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="/DLSatchel;component/Assets/Icons/furniture.png" Width="20" Height="20" Margin="0,0,7,0"/>
-                        <TextBlock Text="Your Collection" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </GroupBox.Header>
-                <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Name="CollectionHelpText" Margin="6,0,6,6"
-                               Foreground="{StaticResource MutedStarlight}" TextWrapping="Wrap"
-                               Text="Your save, organized by collection."/>
-                    <Button Grid.Column="1" Name="AddAllMissingButton" Content="Add all missing…" Padding="10,3"
-                            Margin="0,0,4,6" VerticalAlignment="Top" Visibility="Collapsed" Click="AddAllMissing_Click"
-                            ToolTip="Add one of every item of this collection that you don't have yet. You choose which kinds (shop, event, quest…) first."/>
-                </Grid>
-                <TabControl Name="InventoryTabs" Grid.Row="1" SelectionChanged="InventoryTabs_SelectionChanged">
+            <!-- Collection buttons, between the two tables: two columns that scroll in a short window.
+                 The selected collection's table shows in the "Your Collection" frame on the right. -->
+            <TabControl Name="InventoryTabs" Grid.Column="1" Margin="2,12,2,0" SelectionChanged="InventoryTabs_SelectionChanged">
                     <TabControl.Template>
                         <ControlTemplate TargetType="TabControl">
-                            <Grid KeyboardNavigation.TabNavigation="Local">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <UniformGrid Grid.Row="0" IsItemsHost="True" Columns="4"
-                                             KeyboardNavigation.TabIndex="1"/>
-                                <Border Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        Background="{TemplateBinding Background}"
-                                        KeyboardNavigation.DirectionalNavigation="Contained"
-                                        KeyboardNavigation.TabIndex="2">
-                                    <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"
-                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                      Margin="{TemplateBinding Padding}"
-                                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </Grid>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                                <UniformGrid IsItemsHost="True" Columns="2" VerticalAlignment="Top"
+                                             KeyboardNavigation.TabNavigation="Local"/>
+                            </ScrollViewer>
                         </ControlTemplate>
                     </TabControl.Template>
                     <TabControl.ItemContainerStyle>
                         <Style TargetType="TabItem">
-                            <Setter Property="Padding" Value="6,4"/>
-                            <Setter Property="Margin" Value="2"/>
-                            <Setter Property="MinHeight" Value="29"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Padding" Value="7,2"/>
+                            <Setter Property="Margin" Value="2,1"/>
+                            <Setter Property="MinHeight" Value="24"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
                             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
                             <Setter Property="FontSize" Value="10.5"/>
                             <Setter Property="Foreground" Value="{StaticResource Starlight}"/>
@@ -485,10 +446,10 @@
                                       ScrollViewer.HorizontalScrollBarVisibility="Auto">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Mount ID" Binding="{Binding [Mount ID]}" Width="Auto"/>
-                                    <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" Width="2*"/>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding [Name]}" Width="*"/>
                                     <DataGridTextColumn Header="Bond level" Binding="{Binding [Bond level]}" Width="Auto"/>
                                     <DataGridTextColumn Header="Bond points" Binding="{Binding [Bond points]}" Width="Auto"/>
-                                    <DataGridTextColumn Header="Ability level" Binding="{Binding [Ability level]}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Abilities" Binding="{Binding [Ability level]}" Width="1.2*"/>
                                     <DataGridTextColumn Header="Customized" Binding="{Binding [Customized]}" Width="Auto"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -570,24 +531,51 @@
                     </TabItem>
 
                 </TabControl>
+
+            <!-- Player collection -->
+            <GroupBox Grid.Column="2" Margin="3,0,0,0">
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/DLSatchel;component/Assets/Icons/furniture.png" Width="20" Height="20" Margin="0,0,7,0"/>
+                        <TextBlock Text="Your Collection" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Name="CollectionHelpText" Margin="6,0,6,6"
+                                   Foreground="{StaticResource MutedStarlight}" TextWrapping="Wrap"
+                                   Text="Your save, organized by collection."/>
+                        <Button Grid.Column="1" Name="AddAllMissingButton" Content="Add all missing…" Padding="10,3"
+                                Margin="0,0,4,6" VerticalAlignment="Top" Visibility="Collapsed" Click="AddAllMissing_Click"
+                                ToolTip="Add one of every item of this collection that you don't have yet. You choose which kinds (shop, event, quest…) first."/>
+                    </Grid>
+                    <ContentPresenter Grid.Row="1" Content="{Binding SelectedContent, ElementName=InventoryTabs}"/>
                 </Grid>
             </GroupBox>
         </Grid>
 
 
         <!-- Buttons Section -->
-        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+        <StackPanel Grid.Row="3" Margin="0,6,0,0">
             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Width="150" MinHeight="38" Margin="5" Click="LoadExcel_Click" ToolTip="Choose item list files. They replace the lists you use now."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Item Lists…"/></StackPanel></Button>
-                <Button Width="150" MinHeight="38" Margin="5" Click="AddCatalog_Click" ToolTip="Add another item list file next to the ones you use."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="+ Add List"/></StackPanel></Button>
-                <Button Width="150" MinHeight="38" Margin="5" Click="SaveChanges_Click" Style="{StaticResource AccentButton}" ToolTip="Review and write your edits to the selected save"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/logo.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Save Changes"/></StackPanel></Button>
-                <Button Width="190" MinHeight="38" Margin="5" Click="OpenFile_Click" ToolTip="Open a save file from any folder"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Open Save…"/></StackPanel></Button>
-                <Button Width="190" MinHeight="38" Margin="5" Click="AutoDetectSave_Click" ToolTip="Find saves in the usual game folders"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Find Game Save"/></StackPanel></Button>
-                <Button Width="135" MinHeight="38" Margin="5" Name="ValidateSaveButton" IsEnabled="False" Click="ValidateSave_Click" ToolTip="Look for problems in your save. Nothing is changed."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Check Save"/></StackPanel></Button>
-                <Button Width="165" MinHeight="38" Margin="5" Name="RestoreBackupButton" IsEnabled="False" Click="RestoreBackup_Click" ToolTip="Go back to a copy the editor made before saving"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Restore Backup…"/></StackPanel></Button>
-                <Button Width="135" MinHeight="38" Margin="5" Click="CopyReport_Click" ToolTip="Copy versions and counts for a bug report. No personal data."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Copy Report"/></StackPanel></Button>
-                <Button Width="145" MinHeight="38" Margin="5" Click="CompareSaves_Click" ToolTip="Compare two save files. Nothing is changed."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Compare Saves"/></StackPanel></Button>
-                <Button Width="110" MinHeight="38" Margin="5" Click="Sources_Click" ToolTip="Update, add or remove your item lists"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Sources…"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="LoadExcel_Click" ToolTip="Choose item list files. They replace the lists you use now."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Item Lists…"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="AddCatalog_Click" ToolTip="Add another item list file next to the ones you use."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/collections.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="+ Add List"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="SaveChanges_Click" Style="{StaticResource AccentButton}" ToolTip="Review and write your edits to the selected save"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/logo.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Save Changes"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="OpenFile_Click" ToolTip="Open a save file from any folder"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Open Save…"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="AutoDetectSave_Click" ToolTip="Find saves in the usual game folders"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Find Game Save"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Name="ValidateSaveButton" IsEnabled="False" Click="ValidateSave_Click" ToolTip="Look for problems in your save. Nothing is changed."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Check Save"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Name="RestoreBackupButton" IsEnabled="False" Click="RestoreBackup_Click" ToolTip="Go back to a copy the editor made before saving"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Restore Backup…"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="CopyReport_Click" ToolTip="Copy versions and counts for a bug report. No personal data."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/quests.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Copy Report"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="CompareSaves_Click" ToolTip="Compare two save files. Nothing is changed."><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/characters.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Compare Saves"/></StackPanel></Button>
+                <Button MinHeight="34" Margin="3" Padding="8,0" Click="Sources_Click" ToolTip="Update, add or remove your item lists"><StackPanel Orientation="Horizontal"><Image Source="/DLSatchel;component/Assets/Icons/memories.png" Width="18" Height="18" Margin="0,0,7,0"/><TextBlock Text="Sources…"/></StackPanel></Button>
             </WrapPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
                 <TextBlock Name="DbStatusText" Foreground="{StaticResource MutedStarlight}" Text="No item lists loaded"/>

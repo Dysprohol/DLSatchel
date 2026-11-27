@@ -755,8 +755,8 @@ namespace DDV_SaveEditor_G
             CollectionHelpText.Text = CurrentTab switch
             {
                 "Backpack" => "Backpack: what you carry, slot by slot.",
-                "Pets" => "Companions: your pets and critters.",
-                "Mounts" => "A new mount gets its bond and favourite treats from the game the first time it loads (tested). Mounts can't be removed by the editor.",
+                "Pets" => "Companions: the pets that follow you around.",
+                "Mounts" => "Mounts: the ones you have unlocked.",
                 "Tools" => "Tools & Accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
                 "Presets" => "Presets: ready-made decoration sets. Adding one also offers the furniture it needs. Removing is not supported.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
