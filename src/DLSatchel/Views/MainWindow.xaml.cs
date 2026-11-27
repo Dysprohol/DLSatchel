@@ -46,7 +46,12 @@ namespace DDV_SaveEditor_G
             PopulateStorage();
             InitializeUpdates();
             Loaded += MainWindow_Loaded;
+            PageScroll.SizeChanged += (_, e) =>
+                RootGrid.Height = Math.Max(e.NewSize.Height - RootGrid.Margin.Top - RootGrid.Margin.Bottom, MinLayoutHeight);
         }
+
+        /// <summary>Below this the window scrolls, so the two lists keep a usable height on a small screen.</summary>
+        private const double MinLayoutHeight = 760;
 
         /* =================================================================
          *  Baza przedmiotów (Excel)
@@ -756,9 +761,9 @@ namespace DDV_SaveEditor_G
             {
                 "Backpack" => "Backpack: what you carry, slot by slot.",
                 "Pets" => "Companions: the pets that follow you around.",
-                "Mounts" => "Mounts: the ones you have unlocked.",
-                "Tools" => "Tools & Accessories: tools and held items such as umbrellas and parasols. New ones are added unequipped; removing is not supported.",
-                "Presets" => "Presets: ready-made decoration sets. Adding one also offers the furniture it needs. Removing is not supported.",
+                "Mounts" => "Mounts you have unlocked.",
+                "Tools" => "Tools and held items such as umbrellas and parasols.",
+                "Presets" => "Ready-made decoration sets.",
                 "Clothes" => "Wardrobe: owned clothing and appearance items are listed here.",
                 _ when TryGetCurrentStorageItemType(out var itemType) && !storageInfos.ContainsKey(itemType) =>
                     $"{DisplayInventoryType(itemType)} is not present in this save.",
@@ -1128,7 +1133,7 @@ namespace DDV_SaveEditor_G
 
             var table = MountModule.MapMounts(jsonData);
             MountsDataGrid.ItemsSource = table.DefaultView;
-            MountsStatusText.Text = $"Unlocked mounts: {table.Rows.Count}. A new mount gets its bond and favourite treats from the game the first time it loads (tested). Mounts can't be removed by the editor.";
+            MountsStatusText.Text = $"{table.Rows.Count} unlocked. The game sets up a new mount's bond and treats itself (tested). Mounts can't be removed.";
         }
 
         private void PopulateTools()
@@ -1143,8 +1148,7 @@ namespace DDV_SaveEditor_G
             var table = ToolModule.MapTools(jsonData);
             ToolsDataGrid.ItemsSource = table.DefaultView;
             int accessories = table.AsEnumerable().Count(r => r.Field<string>("Kind") == "Accessory");
-            ToolsStatusText.Text = $"Tools and accessories: {table.Rows.Count} ({accessories} accessories). " +
-                                   "Find an umbrella or parasol in the item list and click Add item; it is added unequipped.";
+            ToolsStatusText.Text = $"{table.Rows.Count} items ({accessories} accessories). New ones are added unequipped; removing isn't supported.";
         }
 
         private void PopulatePresets()
@@ -1160,11 +1164,11 @@ namespace DDV_SaveEditor_G
             PresetsDataGrid.ItemsSource = table.DefaultView;
             PresetsStatusText.Text = ItemPlacement.PresetList(jsonData) == null
                 ? "This save has no preset list yet, so presets can't be added."
-                : $"Unlocked presets: {table.Rows.Count}. Pick a preset in the item list and click Add item; " +
+                : $"{table.Rows.Count} unlocked. " +
                   (PresetLayouts.All.Count > 0
-                      ? "the editor also offers the furniture it needs. "
-                      : "the game folder was not found, so the furniture a preset needs can't be offered. ") +
-                  "Untick \"Hide risky or unfinished items\" to see unreleased ones.";
+                      ? "Adding one also offers the furniture it needs. "
+                      : "The game folder was not found, so the furniture a preset needs can't be offered. ") +
+                  "Unreleased ones show when \"Hide risky or unfinished items\" is off.";
         }
 
         private void UpdateCurrentPetText()
