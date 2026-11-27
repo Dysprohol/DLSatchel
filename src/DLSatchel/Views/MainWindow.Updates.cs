@@ -10,7 +10,9 @@ namespace DDV_SaveEditor_G
     {
         private AppSettings appSettings = new();
         private ReleaseInfo? availableRelease;
-        private bool loadingUpdateSettings;
+        // True until the settings are read: the XAML IsChecked="True" of AskWarningsCheckBox fires its Changed
+        // handler while the window is built, and saving then would overwrite settings.json with the defaults.
+        private bool loadingUpdateSettings = true;
 
         private void InitializeUpdates()
         {
