@@ -132,7 +132,7 @@ or add carefully.
 After every update the gold line says how many items are new. Want to know without clicking? Tick
 **New items at start** (top right): once a day the editor gets the newest lists and tells you.
 
-![Your item lists are 18 days old. Update now](docs/img/screen-lists-notice.png?v=1.4.1)
+![The game was updated after your item lists. Update now](docs/img/screen-lists-notice.png?v=1.5.4)
 
 A list is only replaced if the new copy reads correctly, so a broken or emptied sheet can't spoil
 anything. Fresh copies are kept in the editor's own folder; your own Excel files are never changed.
