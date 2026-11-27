@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +17,36 @@ namespace DDV_SaveEditor_G
     {
         private bool _listsBusy;
         private bool _listsNoticeOffersDownload;
+
+        private static HashSet<long> KnownItemIds() =>
+            ItemDatabase.Table is System.Data.DataTable table
+                ? table.AsEnumerable().Select(r => long.TryParse(r["ID"]?.ToString(), out long id) ? id : 0).Where(id => id > 0).ToHashSet()
+                : new HashSet<long>();
+
+        /// <summary>After an update: how many items the lists know now that they didn't before.</summary>
+        private void ReportNewItems(HashSet<long> before, List<SourceUpdateResult> results)
+        {
+            if (!results.Any(r => r.Updated) || before.Count == 0) return;
+            int added = KnownItemIds().Count(id => !before.Contains(id));
+            ShowListsNotice(added > 0
+                    ? $"Your item lists were updated: {added:N0} new item(s). New items aren't checked by players at first - back up before adding them."
+                    : "Your item lists were updated - nothing new since last time.",
+                "Sources…", offersDownload: false);
+            _listsNoticeOpensSources = true;
+        }
+
+        /// <summary>Once a day at start, when the player ticked "New items at start".</summary>
+        private async Task CheckListsAtStartAsync()
+        {
+            if (appSettings?.CheckListsAtStart != true || ItemDatabase.Table == null) return;
+            if (appSettings.LastListCheckUtc is DateTime last && DateTime.UtcNow - last < TimeSpan.FromHours(20)) return;
+            appSettings.LastListCheckUtc = DateTime.UtcNow;
+            appSettings.Save();
+            try { await UpdateListsAsync(quiet: true); }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"List check at start failed: {ex.Message}"); }
+        }
+
+        private bool _listsNoticeOpensSources;
 
         private SourcesConfig CurrentSources()
         {
@@ -51,6 +82,7 @@ namespace DDV_SaveEditor_G
 
         private void ShowListsNotice(string text, string link, bool offersDownload)
         {
+            _listsNoticeOpensSources = false;
             ListsNoticeText.Text = text + " ";
             ListsNoticeLinkText.Text = link;
             _listsNoticeOffersDownload = offersDownload;
@@ -61,7 +93,8 @@ namespace DDV_SaveEditor_G
         {
             try
             {
-                if (_listsNoticeOffersDownload) await DownloadKnownListsAsync();
+                if (_listsNoticeOpensSources) Sources_Click(sender, e);
+                else if (_listsNoticeOffersDownload) await DownloadKnownListsAsync();
                 else await UpdateListsAsync();
             }
             catch (Exception ex)
@@ -135,26 +168,30 @@ namespace DDV_SaveEditor_G
         }
 
         /// <summary>Downloads every list that has a link and reloads the catalog. Returns whether any changed.</summary>
-        private async Task<bool> UpdateListsAsync()
+        /// <param name="quiet">At start: no windows; problems wait until the player updates by hand.</param>
+        private async Task<bool> UpdateListsAsync(bool quiet = false)
         {
             if (_listsBusy) return false;
             _listsBusy = true;
             var config = CurrentSources();
             List<SourceUpdateResult> results;
+            var before = KnownItemIds();
             try
             {
                 ListsNotice.Visibility = Visibility.Collapsed;
                 results = await ListUpdates.UpdateAllAsync(config, CurrentItemCount,
                     new Progress<string>(text => DbStatusText.Text = text));
                 if (results.Count > 0)
-                    await LoadConfiguredDatabaseAsync(config, showErrors: true);
+                    await LoadConfiguredDatabaseAsync(config, showErrors: !quiet);
             }
             finally
             {
                 _listsBusy = false;
                 UpdateListsNotice();
             }
+            ReportNewItems(before, results);
 
+            if (quiet) return results.Any(r => r.Updated);
             if (results.Count == 0)
             {
                 MessageBox.Show("None of your lists has a link to update from. Open Sources… and use Add from link.",

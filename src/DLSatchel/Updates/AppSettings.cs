@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.Json;
 
@@ -14,6 +15,11 @@ namespace DDV_SaveEditor_G.Updates
 
         /// <summary>Ask before adding an item with warnings. Off: the warning only shows in the status line.</summary>
         public bool AskBeforeAddingWarnedItems { get; set; } = true;
+
+        /// <summary>Off by default: once a day at start, download the item lists and say how many items are new.</summary>
+        public bool CheckListsAtStart { get; set; }
+
+        public DateTime? LastListCheckUtc { get; set; }
 
         private static string FilePath => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

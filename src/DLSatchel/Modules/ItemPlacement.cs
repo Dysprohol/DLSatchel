@@ -102,7 +102,13 @@ namespace DDV_SaveEditor_G.Modules
                             }
                             : Unsupported("This save has no mounts yet, so mounts can't be added.");
 
-                    return prefix is "Pet" or "Critter"
+                    // Critter/... (1201xxxxx) are the wild animals walking around the valley. Game-written saves never
+                    // hold them in Player.Pets (checked in 7 saves, 219-221 companions); players report that adding
+                    // them there breaks the Companions list. The companion of the same animal is a Pet/... item.
+                    if (prefix == "Critter")
+                        return Unsupported(CritterProblem);
+
+                    return prefix is "Pet"
                         ? new Placement
                         {
                             Kind = PlacementKind.Pet,
@@ -298,6 +304,20 @@ namespace DDV_SaveEditor_G.Modules
         }
 
         private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
+
+        internal const string CritterProblem =
+            "This is a wild critter that walks around your valley, not a companion. Players report that adding one as a " +
+            "companion breaks the Companions list. The companion version has its own ID - search for the same name.";
+
+        /// <summary>A wild critter (Critter/..., IDs 1201xxxxx) rather than a companion.</summary>
+        public static bool IsWildCritter(long id)
+        {
+            var row = ItemDatabase.Find(id);
+            string name = ItemDatabase.Get(row, "NAME", "");
+            return name.Length > 0
+                ? name.StartsWith("Critter/", StringComparison.OrdinalIgnoreCase)
+                : id is >= 120100000 and < 120200000;
+        }
 
         private static Placement Unsupported(string why) =>
             new() { Kind = PlacementKind.Unsupported, Label = "—", Problem = why };

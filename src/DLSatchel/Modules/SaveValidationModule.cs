@@ -75,6 +75,18 @@ namespace DDV_SaveEditor_G.Modules
                     if (!seenPets.Add(id))
                         issues.Add(new() { Level = SaveIssueLevel.Error, Path = path, Message = $"Companion {id} is in the save twice." });
 
+                    if (ItemPlacement.IsWildCritter(id))
+                    {
+                        string critter = ItemDatabase.Get(ItemDatabase.Find(id), "LOCALIZED_DISPLAY_NAME", id.ToString());
+                        issues.Add(new()
+                        {
+                            Level = SaveIssueLevel.Error, Path = path,
+                            Message = $"{critter} ({id}) is a wild critter, not a companion. Players report it breaks the Companions list. " +
+                                      "Remove it (Companions tab, Remove selected) - Check Save also offers it."
+                        });
+                        continue;
+                    }
+
                     CheckItem(root, id, PlacementKind.Pet, null, path, issues);
 
                     if (profile626 && pets[i] is JObject pet &&

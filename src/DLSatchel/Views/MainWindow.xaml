@@ -50,6 +50,11 @@
                           ToolTip="Check GitHub for a newer version every time the editor starts">
                     <TextBlock Text="Check at start"/>
                 </CheckBox>
+                <CheckBox Name="CheckListsAtStartCheckBox" HorizontalAlignment="Right" Margin="0,3,0,0" FontSize="11"
+                          Checked="CheckListsAtStart_Changed" Unchecked="CheckListsAtStart_Changed"
+                          ToolTip="Once a day at start, get the newest item lists and say how many items are new">
+                    <TextBlock Text="New items at start"/>
+                </CheckBox>
                 <TextBlock HorizontalAlignment="Right" Margin="0,4,0,0" FontSize="11" TextWrapping="Wrap" TextAlignment="Right">
                     <Run Name="UpdateStatusRun" Foreground="{StaticResource MutedStarlight}"/>
                     <Hyperlink Name="InstallUpdateLink" Click="InstallUpdate_Click" Foreground="{StaticResource DreamlightGold}"

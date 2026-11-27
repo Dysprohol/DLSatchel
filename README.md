@@ -46,7 +46,9 @@ handles that by itself. Before every save it makes a backup, so you can always g
 5. Type a name in **Item name**, click the item in the list, set **Amount** and click **Add item**
    (or just double click the item). The editor puts it in the right place by itself.
    To add several at once, select them with **Ctrl** or **Shift** and click **Add item**.
-   Companions are added the same way and show up in the game's Companions menu.
+   Companions are added the same way and show up in the game's Companions menu. Wild critters (the
+   animals walking around your valley) are not companions: the editor won't add them, and **Check Save**
+   finds any added before - players report they break the Companions list.
 
    ![Finding and adding an item](docs/img/screen-add-item.png?v=1.5.2)
 
@@ -126,6 +128,9 @@ more than a week old, a gold line at the bottom says so - click **Update now**. 
 the same when your save has items the lists don't know yet. When the game itself was updated after
 your lists, the gold line says so too: new items are not checked by anyone yet, so wait a few days
 or add carefully.
+
+After every update the gold line says how many items are new. Want to know without clicking? Tick
+**New items at start** (top right): once a day the editor gets the newest lists and tells you.
 
 ![Your item lists are 18 days old. Update now](docs/img/screen-lists-notice.png?v=1.4.1)
 

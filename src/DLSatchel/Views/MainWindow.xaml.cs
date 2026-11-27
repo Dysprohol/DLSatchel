@@ -65,6 +65,8 @@ namespace DDV_SaveEditor_G
 
             if (needsLists)
                 await OfferFirstDownloadAsync();
+            else
+                await CheckListsAtStartAsync();
         }
 
         /// <summary>Loads the configured lists. Returns true when there are none yet.</summary>
@@ -1755,7 +1757,8 @@ namespace DDV_SaveEditor_G
                     long current = PetModule.GetCurrentPet(jsonData);
                     bool keptCurrent = pets.Any(rv => Convert.ToInt64(rv["Pet ID"]) == current && current != 0);
                     var removablePets = pets.Where(rv => Convert.ToInt64(rv["Pet ID"]) != current &&
-                        PetModule.IsSupportedPet(jsonData, Convert.ToInt64(rv["Pet ID"]))).ToList();
+                        (PetModule.IsSupportedPet(jsonData, Convert.ToInt64(rv["Pet ID"])) ||
+                         ItemPlacement.IsWildCritter(Convert.ToInt64(rv["Pet ID"])))).ToList();
                     int protectedPets = pets.Count - removablePets.Count;
                     foreach (var rv in removablePets)
                         rv.Row.Delete();

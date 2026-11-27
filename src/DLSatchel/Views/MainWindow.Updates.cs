@@ -21,6 +21,7 @@ namespace DDV_SaveEditor_G
             loadingUpdateSettings = true;
             CheckUpdatesAtStartCheckBox.IsChecked = appSettings.CheckUpdatesAtStart;
             AskWarningsCheckBox.IsChecked = appSettings.AskBeforeAddingWarnedItems;
+            CheckListsAtStartCheckBox.IsChecked = appSettings.CheckListsAtStart;
             loadingUpdateSettings = false;
 
             if (appSettings.CheckUpdatesAtStart)
@@ -43,6 +44,13 @@ namespace DDV_SaveEditor_G
         {
             if (loadingUpdateSettings || appSettings == null) return;
             appSettings.AskBeforeAddingWarnedItems = AskWarningsCheckBox.IsChecked == true;
+            appSettings.Save();
+        }
+
+        private void CheckListsAtStart_Changed(object sender, RoutedEventArgs e)
+        {
+            if (loadingUpdateSettings || appSettings == null) return;
+            appSettings.CheckListsAtStart = CheckListsAtStartCheckBox.IsChecked == true;
             appSettings.Save();
         }
 
