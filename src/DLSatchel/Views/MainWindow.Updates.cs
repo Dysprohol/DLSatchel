@@ -99,6 +99,9 @@ namespace DDV_SaveEditor_G
 
         private async void InstallUpdate_Click(object sender, RoutedEventArgs e)
         {
+            // Return from the link's click first: a Hyperlink is clicked synchronously by UI Automation
+            // (screen readers, test scripts), and the question below would otherwise block the caller.
+            await Task.Yield();
             if (availableRelease is not ReleaseInfo release) return;
 
             if (!UpdateChecker.CanInstallInPlace || release.ExeUrl == null)

@@ -171,7 +171,7 @@ namespace DDV_SaveEditor_G.Updates
             return true;
         }
 
-        /// <summary>Removes the previous version left by an update.</summary>
+        /// <summary>Removes the previous version left by an update, and the downloaded copies in Temp.</summary>
         public static void DeleteLeftoverFromUpdate()
         {
             if (Environment.ProcessPath is not string current) return;
@@ -184,6 +184,17 @@ namespace DDV_SaveEditor_G.Updates
             {
                 // the old process may still be closing; next start tries again
             }
+
+            // Each update downloads the whole editor (~65 MB) to Temp; once installed it is not needed.
+            string downloads = Path.Combine(Path.GetTempPath(), "DLSatchel-update");
+            if (!Directory.Exists(downloads) || current.StartsWith(downloads, StringComparison.OrdinalIgnoreCase)) return;
+            foreach (string file in Directory.GetFiles(downloads, "DLSatchel-*.exe"))
+            {
+                try { File.Delete(file); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            }
+            try { Directory.Delete(downloads); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }   // not empty or in use: next time
         }
 
         public static void OpenInBrowser(string url)
